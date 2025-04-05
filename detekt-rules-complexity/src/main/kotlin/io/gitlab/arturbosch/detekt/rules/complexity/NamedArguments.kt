@@ -1,9 +1,9 @@
 package io.gitlab.arturbosch.detekt.rules.complexity
 
-import io.gitlab.arturbosch.detekt.api.CodeSmell
 import io.gitlab.arturbosch.detekt.api.Config
 import io.gitlab.arturbosch.detekt.api.Configuration
 import io.gitlab.arturbosch.detekt.api.Entity
+import io.gitlab.arturbosch.detekt.api.Finding
 import io.gitlab.arturbosch.detekt.api.RequiresFullAnalysis
 import io.gitlab.arturbosch.detekt.api.Rule
 import io.gitlab.arturbosch.detekt.api.config
@@ -29,11 +29,12 @@ import org.jetbrains.kotlin.resolve.calls.util.getResolvedCall
  * sum(a = 1, b = 2, c = 3, d = 4)
  * </compliant>
  */
-@RequiresFullAnalysis
-class NamedArguments(config: Config) : Rule(
-    config,
-    "Named arguments are required for function calls with many arguments."
-) {
+class NamedArguments(config: Config) :
+    Rule(
+        config,
+        "Named arguments are required for function calls with many arguments."
+    ),
+    RequiresFullAnalysis {
 
     @Configuration("The allowed number of arguments for a function.")
     private val allowedArguments: Int by config(defaultValue = 3)
@@ -46,7 +47,7 @@ class NamedArguments(config: Config) : Rule(
         if (valueArguments.size > allowedArguments && expression.canNameArguments()) {
             val message = "This function call has ${valueArguments.size} arguments. To call a function with more " +
                 "than $allowedArguments arguments you should set the name of each argument."
-            report(CodeSmell(Entity.from(expression), message))
+            report(Finding(Entity.from(expression), message))
         } else {
             super.visitCallExpression(expression)
         }

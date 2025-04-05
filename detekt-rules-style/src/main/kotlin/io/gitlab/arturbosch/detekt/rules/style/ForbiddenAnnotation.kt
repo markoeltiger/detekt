@@ -1,9 +1,9 @@
 package io.gitlab.arturbosch.detekt.rules.style
 
-import io.gitlab.arturbosch.detekt.api.CodeSmell
 import io.gitlab.arturbosch.detekt.api.Config
 import io.gitlab.arturbosch.detekt.api.Configuration
 import io.gitlab.arturbosch.detekt.api.Entity
+import io.gitlab.arturbosch.detekt.api.Finding
 import io.gitlab.arturbosch.detekt.api.Location
 import io.gitlab.arturbosch.detekt.api.RequiresFullAnalysis
 import io.gitlab.arturbosch.detekt.api.Rule
@@ -35,11 +35,12 @@ import org.jetbrains.kotlin.types.KotlinType
  * class SomeClass()
  * </compliant>
  */
-@RequiresFullAnalysis
-class ForbiddenAnnotation(config: Config) : Rule(
-    config,
-    "Avoid using this annotation."
-) {
+class ForbiddenAnnotation(config: Config) :
+    Rule(
+        config,
+        "Avoid using this annotation."
+    ),
+    RequiresFullAnalysis {
 
     @Configuration(
         "List of fully qualified annotation classes which are forbidden."
@@ -93,7 +94,7 @@ class ForbiddenAnnotation(config: Config) : Rule(
                     location.path
                 )
             }
-            report(CodeSmell(Entity.from(element, location), message))
+            report(Finding(Entity.from(element, location), message))
         }
     }
 

@@ -1,15 +1,15 @@
 package io.gitlab.arturbosch.detekt.rules.style
 
+import com.intellij.psi.PsiElement
 import io.gitlab.arturbosch.detekt.api.ActiveByDefault
-import io.gitlab.arturbosch.detekt.api.CodeSmell
 import io.gitlab.arturbosch.detekt.api.Config
 import io.gitlab.arturbosch.detekt.api.Entity
+import io.gitlab.arturbosch.detekt.api.Finding
 import io.gitlab.arturbosch.detekt.api.RequiresFullAnalysis
 import io.gitlab.arturbosch.detekt.api.Rule
 import io.gitlab.arturbosch.detekt.rules.isAbstract
 import io.gitlab.arturbosch.detekt.rules.isInternal
 import io.gitlab.arturbosch.detekt.rules.isProtected
-import org.jetbrains.kotlin.com.intellij.psi.PsiElement
 import org.jetbrains.kotlin.descriptors.MemberDescriptor
 import org.jetbrains.kotlin.descriptors.Modality
 import org.jetbrains.kotlin.psi.KtCallableDeclaration
@@ -45,11 +45,12 @@ import org.jetbrains.kotlin.types.typeUtil.isInterface
  * </compliant>
  */
 @ActiveByDefault(since = "1.23.0")
-@RequiresFullAnalysis
-class AbstractClassCanBeInterface(config: Config) : Rule(
-    config,
-    "An abstract class is unnecessary. May be refactored to an interface."
-) {
+class AbstractClassCanBeInterface(config: Config) :
+    Rule(
+        config,
+        "An abstract class is unnecessary. May be refactored to an interface."
+    ),
+    RequiresFullAnalysis {
 
     private val noConcreteMember = "An abstract class without a concrete member can be refactored to an interface."
 
@@ -66,13 +67,13 @@ class AbstractClassCanBeInterface(config: Config) : Rule(
             members.isNotEmpty() -> checkMembers(members, nameIdentifier)
             hasInheritedMember(true) && isAnyParentAbstract() -> return
             !hasConstructorParameter() ->
-                report(CodeSmell(Entity.from(nameIdentifier), noConcreteMember))
+                report(Finding(Entity.from(nameIdentifier), noConcreteMember))
         }
     }
 
     private fun KtClass.checkMembers(
         members: List<KtCallableDeclaration>,
-        nameIdentifier: PsiElement
+        nameIdentifier: PsiElement,
     ) {
         val (abstractMembers, concreteMembers) = members.partition { it.isAbstract() }
         when {
@@ -81,7 +82,7 @@ class AbstractClassCanBeInterface(config: Config) : Rule(
             abstractMembers.any { it.isInternal() || it.isProtected() } || hasConstructorParameter() ->
                 Unit
             concreteMembers.isEmpty() && !hasInheritedMember(false) ->
-                report(CodeSmell(Entity.from(nameIdentifier), noConcreteMember))
+                report(Finding(Entity.from(nameIdentifier), noConcreteMember))
         }
     }
 

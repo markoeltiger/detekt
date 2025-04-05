@@ -1,9 +1,9 @@
 package io.gitlab.arturbosch.detekt.rules.style
 
 import io.gitlab.arturbosch.detekt.api.ActiveByDefault
-import io.gitlab.arturbosch.detekt.api.CodeSmell
 import io.gitlab.arturbosch.detekt.api.Config
 import io.gitlab.arturbosch.detekt.api.Entity
+import io.gitlab.arturbosch.detekt.api.Finding
 import io.gitlab.arturbosch.detekt.api.RequiresFullAnalysis
 import io.gitlab.arturbosch.detekt.api.Rule
 import io.gitlab.arturbosch.detekt.rules.fqNameOrNull
@@ -42,12 +42,13 @@ import org.jetbrains.kotlin.types.isNullable
  *
  */
 @Suppress("TooManyFunctions")
-@RequiresFullAnalysis
 @ActiveByDefault(since = "1.21.0")
-class UseIsNullOrEmpty(config: Config) : Rule(
-    config,
-    "Use `isNullOrEmpty()` call instead of `x == null || x.isEmpty()`."
-) {
+class UseIsNullOrEmpty(config: Config) :
+    Rule(
+        config,
+        "Use `isNullOrEmpty()` call instead of `x == null || x.isEmpty()`."
+    ),
+    RequiresFullAnalysis {
 
     override fun visitBinaryExpression(expression: KtBinaryExpression) {
         super.visitBinaryExpression(expression)
@@ -62,7 +63,7 @@ class UseIsNullOrEmpty(config: Config) : Rule(
         if (nullCheckedExpression.text != sizeCheckedExpression.text) return
 
         val message = "This '${expression.text}' can be replaced with 'isNullOrEmpty()' call"
-        report(CodeSmell(Entity.from(expression), message))
+        report(Finding(Entity.from(expression), message))
     }
 
     private fun KtExpression.isSimpleNameExpression(): Boolean =

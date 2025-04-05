@@ -1,9 +1,9 @@
 package io.gitlab.arturbosch.detekt.rules.style
 
 import io.gitlab.arturbosch.detekt.api.ActiveByDefault
-import io.gitlab.arturbosch.detekt.api.CodeSmell
 import io.gitlab.arturbosch.detekt.api.Config
 import io.gitlab.arturbosch.detekt.api.Entity
+import io.gitlab.arturbosch.detekt.api.Finding
 import io.gitlab.arturbosch.detekt.api.RequiresFullAnalysis
 import io.gitlab.arturbosch.detekt.api.Rule
 import io.gitlab.arturbosch.detekt.rules.isCallingWithNonNullCheckArgument
@@ -21,17 +21,18 @@ import org.jetbrains.kotlin.psi.KtCallExpression
  * checkNotNull(x)
  * </compliant>
  */
-@RequiresFullAnalysis
 @ActiveByDefault(since = "1.21.0")
-class UseCheckNotNull(config: Config) : Rule(
-    config,
-    "Use checkNotNull() instead of check() for checking not-null."
-) {
+class UseCheckNotNull(config: Config) :
+    Rule(
+        config,
+        "Use checkNotNull() instead of check() for checking not-null."
+    ),
+    RequiresFullAnalysis {
 
     override fun visitCallExpression(expression: KtCallExpression) {
         super.visitCallExpression(expression)
         if (expression.isCallingWithNonNullCheckArgument(checkFunctionFqName, bindingContext)) {
-            report(CodeSmell(Entity.from(expression), description))
+            report(Finding(Entity.from(expression), description))
         }
     }
 

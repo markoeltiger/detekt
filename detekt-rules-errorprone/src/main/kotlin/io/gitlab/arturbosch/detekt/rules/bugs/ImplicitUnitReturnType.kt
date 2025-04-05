@@ -1,9 +1,9 @@
 package io.gitlab.arturbosch.detekt.rules.bugs
 
-import io.gitlab.arturbosch.detekt.api.CodeSmell
 import io.gitlab.arturbosch.detekt.api.Config
 import io.gitlab.arturbosch.detekt.api.Configuration
 import io.gitlab.arturbosch.detekt.api.Entity
+import io.gitlab.arturbosch.detekt.api.Finding
 import io.gitlab.arturbosch.detekt.api.RequiresFullAnalysis
 import io.gitlab.arturbosch.detekt.api.Rule
 import io.gitlab.arturbosch.detekt.api.config
@@ -32,14 +32,15 @@ import org.jetbrains.kotlin.psi.KtNamedFunction
  * </compliant>
  *
  */
-@RequiresFullAnalysis
-class ImplicitUnitReturnType(config: Config) : Rule(
-    config,
-    "Functions using expression statements have an implicit return type. " +
-        "Changing the type of the expression accidentally, changes the function return type. " +
-        "This may lead to backward incompatibility. " +
-        "Use a block statement to make clear this function will never return a value."
-) {
+class ImplicitUnitReturnType(config: Config) :
+    Rule(
+        config,
+        "Functions using expression statements have an implicit return type. " +
+            "Changing the type of the expression accidentally, changes the function return type. " +
+            "This may lead to backward incompatibility. " +
+            "Use a block statement to make clear this function will never return a value."
+    ),
+    RequiresFullAnalysis {
 
     @Configuration("if functions with explicit `Unit` return type should be allowed")
     private val allowExplicitReturnType: Boolean by config(true)
@@ -63,7 +64,7 @@ class ImplicitUnitReturnType(config: Config) : Rule(
                 append('.')
             }
             report(
-                CodeSmell(
+                Finding(
                     Entity.atName(function),
                     message
                 )

@@ -1,12 +1,12 @@
 package io.gitlab.arturbosch.detekt.rules.bugs
 
+import com.intellij.psi.impl.source.tree.LeafPsiElement
 import io.gitlab.arturbosch.detekt.api.ActiveByDefault
-import io.gitlab.arturbosch.detekt.api.CodeSmell
 import io.gitlab.arturbosch.detekt.api.Config
 import io.gitlab.arturbosch.detekt.api.Entity
+import io.gitlab.arturbosch.detekt.api.Finding
 import io.gitlab.arturbosch.detekt.api.RequiresFullAnalysis
 import io.gitlab.arturbosch.detekt.api.Rule
-import org.jetbrains.kotlin.com.intellij.psi.impl.source.tree.LeafPsiElement
 import org.jetbrains.kotlin.diagnostics.Errors
 import org.jetbrains.kotlin.lexer.KtTokens
 import org.jetbrains.kotlin.psi.KtSafeQualifiedExpression
@@ -25,12 +25,13 @@ import org.jetbrains.kotlin.psi.psiUtil.getChildOfType
  * val b = a?.length
  * </compliant>
  */
-@RequiresFullAnalysis
 @ActiveByDefault(since = "1.16.0")
-class UnnecessarySafeCall(config: Config) : Rule(
-    config,
-    "Unnecessary safe call operator detected."
-) {
+class UnnecessarySafeCall(config: Config) :
+    Rule(
+        config,
+        "Unnecessary safe call operator detected."
+    ),
+    RequiresFullAnalysis {
 
     override fun visitSafeQualifiedExpression(expression: KtSafeQualifiedExpression) {
         super.visitSafeQualifiedExpression(expression)
@@ -47,7 +48,7 @@ class UnnecessarySafeCall(config: Config) : Rule(
 
         if (compilerReport != null) {
             report(
-                CodeSmell(
+                Finding(
                     Entity.from(expression),
                     "${expression.text} contains an unnecessary " +
                         "safe call operator"

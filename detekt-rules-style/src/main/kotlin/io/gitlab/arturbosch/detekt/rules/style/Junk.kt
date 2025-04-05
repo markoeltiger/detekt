@@ -1,14 +1,16 @@
 package io.gitlab.arturbosch.detekt.rules.style
 
-import org.jetbrains.kotlin.com.intellij.openapi.util.TextRange
-import org.jetbrains.kotlin.com.intellij.psi.PsiElement
+import com.intellij.openapi.util.TextRange
+import com.intellij.psi.PsiElement
 import org.jetbrains.kotlin.lexer.KtTokens
 import org.jetbrains.kotlin.psi.KtBinaryExpression
 import org.jetbrains.kotlin.psi.KtDotQualifiedExpression
 import org.jetbrains.kotlin.psi.KtExpression
 import org.jetbrains.kotlin.psi.KtFile
 import org.jetbrains.kotlin.psi.KtIfExpression
+import org.jetbrains.kotlin.psi.KtNameReferenceExpression
 import org.jetbrains.kotlin.psi.KtNamedFunction
+import org.jetbrains.kotlin.psi.KtProperty
 import org.jetbrains.kotlin.psi.KtSuperExpression
 import org.jetbrains.kotlin.psi.psiUtil.anyDescendantOfType
 import org.jetbrains.kotlin.psi.psiUtil.elementsInRange
@@ -32,7 +34,7 @@ inline fun <reified T : KtExpression> KtNamedFunction.yieldStatementsSkippingGua
         this@yieldStatementsSkippingGuardClauses.bodyBlockExpression?.statements?.forEach {
             if (firstNonGuardFound) {
                 yield(it)
-            } else if (!it.isGuardClause<T>() && !it.isSuperCall()) {
+            } else if (!it.isGuardClause<T>() && !it.isSuperCall() && !it.isScopedAssignment()) {
                 firstNonGuardFound = true
                 yield(it)
             }
@@ -40,6 +42,9 @@ inline fun <reified T : KtExpression> KtNamedFunction.yieldStatementsSkippingGua
     }
 
 fun KtExpression.isSuperCall(): Boolean = (this as? KtDotQualifiedExpression)?.receiverExpression is KtSuperExpression
+
+fun KtExpression.isScopedAssignment(): Boolean =
+    this is KtProperty && !isVar && (initializer as? KtNameReferenceExpression)?.getReferencedName() == name
 
 inline fun <reified T : KtExpression> KtExpression.isGuardClause(): Boolean {
     val descendantExpr = this.findDescendantOfType<T>() ?: return false

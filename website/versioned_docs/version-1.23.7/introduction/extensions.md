@@ -23,6 +23,13 @@ has as content the fully qualified name of your `RuleSetProvider` e.g. `io.gitla
 You can use our [GitHub template](https://github.com/detekt/detekt-custom-rule-template) to have a basic scaffolding to
 develop your own custom rules. Another option is to clone the provided [detekt/detekt-sample-extensions](https://github.com/detekt/detekt/tree/main/detekt-sample-extensions) project.
 
+:::note
+
+It's important that the dependency of `io.gitlab.arturbosch.detekt:detekt-api` is configured as `compileOnly` (as in the examples).
+You can read more information about this [here](https://github.com/detekt/detekt/issues/7883).
+
+:::
+
 Own rules have to extend the abstract _Rule_ class and override the `visitXXX()`-functions from the AST.  
 A `RuleSetProvider` must be implemented, which declares a `RuleSet` in the `instance()`-function.
 To leverage the configuration mechanism of detekt you must pass the Config object from your rule set provider to your rule.
@@ -247,6 +254,7 @@ after your extension sub project is built.
 you created a pure kotlin module which has no Android dependencies. `apply plugin: "kotlin"` is enough to make it work.
 - Sometimes when you run detekt task, you may not see the violations detected by your custom rules. In this case open a terminal and run
 `./gradlew --stop` to stop gradle daemons and run the task again.
+- If you are configuring a custom detekt task at the root project level, you will need to apply the detektPlugins at the root project as well (not subprojects). See [this issue](https://github.com/detekt/detekt/issues/3989#issuecomment-890331512) for more.
 
 #### autoCorrect property
 

@@ -1,9 +1,9 @@
 package io.gitlab.arturbosch.detekt.rules.bugs
 
-import io.gitlab.arturbosch.detekt.api.CodeSmell
 import io.gitlab.arturbosch.detekt.api.Config
 import io.gitlab.arturbosch.detekt.api.Configuration
 import io.gitlab.arturbosch.detekt.api.Entity
+import io.gitlab.arturbosch.detekt.api.Finding
 import io.gitlab.arturbosch.detekt.api.RequiresFullAnalysis
 import io.gitlab.arturbosch.detekt.api.Rule
 import io.gitlab.arturbosch.detekt.api.config
@@ -37,11 +37,12 @@ import org.jetbrains.kotlin.utils.addToStdlib.ifTrue
  * }
  * </compliant>
  */
-@RequiresFullAnalysis
-class CastNullableToNonNullableType(config: Config) : Rule(
-    config,
-    "Nullable type to non-null type cast is found. Consider using two assertions, `null` assertions and type cast"
-) {
+class CastNullableToNonNullableType(config: Config) :
+    Rule(
+        config,
+        "Nullable type to non-null type cast is found. Consider using two assertions, `null` assertions and type cast"
+    ),
+    RequiresFullAnalysis {
 
     @Configuration("Whether platform types should be considered as non-nullable and ignored by this rule")
     private val ignorePlatformTypes: Boolean by config(true)
@@ -66,6 +67,6 @@ class CastNullableToNonNullableType(config: Config) : Rule(
         val message =
             "Use separate `null` assertion and type cast like ('(${expression.left.text} ?: " +
                 "error(\"null assertion message\")) as ${typeRef.text}') instead of '${expression.text}'."
-        report(CodeSmell(Entity.from(operationReference), message))
+        report(Finding(Entity.from(operationReference), message))
     }
 }

@@ -1,13 +1,13 @@
 package io.gitlab.arturbosch.detekt.rules.style
 
+import com.intellij.psi.PsiElement
 import io.gitlab.arturbosch.detekt.api.ActiveByDefault
-import io.gitlab.arturbosch.detekt.api.CodeSmell
 import io.gitlab.arturbosch.detekt.api.Config
 import io.gitlab.arturbosch.detekt.api.Entity
+import io.gitlab.arturbosch.detekt.api.Finding
 import io.gitlab.arturbosch.detekt.api.RequiresFullAnalysis
 import io.gitlab.arturbosch.detekt.api.Rule
 import io.gitlab.arturbosch.detekt.rules.isAbstract
-import org.jetbrains.kotlin.com.intellij.psi.PsiElement
 import org.jetbrains.kotlin.descriptors.MemberDescriptor
 import org.jetbrains.kotlin.descriptors.Modality
 import org.jetbrains.kotlin.psi.KtCallableDeclaration
@@ -42,11 +42,12 @@ import org.jetbrains.kotlin.types.typeUtil.isInterface
  * </compliant>
  */
 @ActiveByDefault(since = "1.2.0")
-@RequiresFullAnalysis
-class AbstractClassCanBeConcreteClass(config: Config) : Rule(
-    config,
-    "An abstract class is unnecessary. May be refactored to a concrete class."
-) {
+class AbstractClassCanBeConcreteClass(config: Config) :
+    Rule(
+        config,
+        "An abstract class is unnecessary. May be refactored to a concrete class."
+    ),
+    RequiresFullAnalysis {
 
     private val noAbstractMember = "An abstract class without an abstract member can be refactored to a concrete class."
 
@@ -63,17 +64,17 @@ class AbstractClassCanBeConcreteClass(config: Config) : Rule(
             members.isNotEmpty() -> checkMembers(members, nameIdentifier)
             hasInheritedMember(true) && isAnyParentAbstract() -> return
             hasConstructorParameter() ->
-                report(CodeSmell(Entity.from(nameIdentifier), noAbstractMember))
+                report(Finding(Entity.from(nameIdentifier), noAbstractMember))
         }
     }
 
     private fun KtClass.checkMembers(
         members: List<KtCallableDeclaration>,
-        nameIdentifier: PsiElement
+        nameIdentifier: PsiElement,
     ) {
         val (abstractMembers, _) = members.partition { it.isAbstract() }
         if (abstractMembers.isEmpty() && !hasInheritedMember(true)) {
-            report(CodeSmell(Entity.from(nameIdentifier), noAbstractMember))
+            report(Finding(Entity.from(nameIdentifier), noAbstractMember))
         }
     }
 

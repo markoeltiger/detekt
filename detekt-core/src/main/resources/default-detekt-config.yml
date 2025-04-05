@@ -473,6 +473,7 @@ potential-bugs:
       - 'CanIgnoreReturnValue'
       - '*.CanIgnoreReturnValue'
     returnValueTypes:
+      - 'kotlin.Function*'
       - 'kotlin.sequences.Sequence'
       - 'kotlinx.coroutines.flow.*Flow'
       - 'java.util.stream.*Stream'
@@ -516,6 +517,8 @@ potential-bugs:
     active: false
     allowAdjacentDifferentTypeParams: true
     allowSingleParamUse: true
+    ignoreArgumentsMatchingNames: true
+    ignoreFunctionCall: []
   UnnecessaryNotNullCheck:
     active: false
   UnnecessaryNotNullOperator:
@@ -592,6 +595,8 @@ style:
     active: false
   ExplicitCollectionElementAccessMethod:
     active: false
+  ExplicitItLambdaMultipleParameters:
+    active: true
   ExplicitItLambdaParameter:
     active: true
   ExpressionBodySyntax:
@@ -787,6 +792,7 @@ style:
     active: false
   UnusedImport:
     active: false
+    additionalOperatorSet: []
   UnusedParameter:
     active: true
     aliases: ['UNUSED_PARAMETER', 'unused']

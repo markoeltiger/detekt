@@ -1,20 +1,26 @@
 import io.gitlab.arturbosch.detekt.Detekt
 import io.gitlab.arturbosch.detekt.DetektCreateBaselineTask
 import io.gitlab.arturbosch.detekt.report.ReportMergeTask
-import org.jetbrains.dokka.gradle.DokkaMultiModuleTask
 
 plugins {
     id("releasing")
     id("io.gitlab.arturbosch.detekt")
-    id("org.jetbrains.dokka") version "1.9.20"
+    id("org.jetbrains.dokka") version "2.0.0"
 }
 
-tasks.withType<DokkaMultiModuleTask>().configureEach {
-    outputDirectory = layout.projectDirectory.dir("website/static/kdoc")
+dependencies {
+    dokka(projects.detektApi)
+    dokka(projects.detektPsiUtils)
+    dokka(projects.detektTest)
+    dokka(projects.detektTestUtils)
+    dokka(projects.detektTooling)
+    dokka("io.gitlab.arturbosch.detekt:detekt-gradle-plugin")
 }
 
-tasks.wrapper {
-    distributionType = Wrapper.DistributionType.ALL
+dokka {
+    dokkaPublications.html {
+        outputDirectory = layout.projectDirectory.dir("website/static/kdoc")
+    }
 }
 
 val detektReportMergeSarif by tasks.registering(ReportMergeTask::class) {
@@ -57,25 +63,7 @@ allprojects {
     }
 }
 
-subprojects {
-    tasks.withType<Test>().configureEach {
-        develocity {
-            testRetry {
-                @Suppress("MagicNumber")
-                if (providers.environmentVariable("CI").isPresent) {
-                    maxRetries = 3
-                    maxFailures = 20
-                }
-            }
-            predictiveTestSelection {
-                enabled = providers.gradleProperty("enablePTS").map(String::toBooleanStrict)
-            }
-        }
-    }
-}
-
 setOf(
-    "build",
     "detektMain",
     "detektTest",
     "detektFunctionalTest",
@@ -86,3 +74,5 @@ setOf(
         dependsOn(gradle.includedBuild("detekt-gradle-plugin").task(":$taskName"))
     }
 }
+
+tasks.build { dependsOn(gradle.includedBuild("detekt-gradle-plugin").task(":build")) }

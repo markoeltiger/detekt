@@ -1,8 +1,8 @@
 package io.gitlab.arturbosch.detekt.rules.bugs
 
-import io.gitlab.arturbosch.detekt.api.CodeSmell
 import io.gitlab.arturbosch.detekt.api.Config
 import io.gitlab.arturbosch.detekt.api.Entity
+import io.gitlab.arturbosch.detekt.api.Finding
 import io.gitlab.arturbosch.detekt.api.RequiresFullAnalysis
 import io.gitlab.arturbosch.detekt.api.Rule
 import io.gitlab.arturbosch.detekt.rules.fqNameOrNull
@@ -33,11 +33,12 @@ import org.jetbrains.kotlin.resolve.calls.util.getType
  * </compliant>
  *
  */
-@RequiresFullAnalysis
-class DontDowncastCollectionTypes(config: Config) : Rule(
-    config,
-    "Down-casting immutable collection types is breaking the collection contract."
-) {
+class DontDowncastCollectionTypes(config: Config) :
+    Rule(
+        config,
+        "Down-casting immutable collection types is breaking the collection contract."
+    ),
+    RequiresFullAnalysis {
 
     override fun visitIsExpression(expression: KtIsExpression) {
         super.visitIsExpression(expression)
@@ -68,7 +69,7 @@ class DontDowncastCollectionTypes(config: Config) : Rule(
             if (rhsType != null && rhsType.startsWith("Mutable")) {
                 message += " Use `to$rhsType()` instead."
             }
-            report(CodeSmell(Entity.from(parent), message))
+            report(Finding(Entity.from(parent), message))
         }
     }
 

@@ -1,10 +1,10 @@
 package io.gitlab.arturbosch.detekt.rules.style
 
 import io.github.detekt.psi.FunctionMatcher.Companion.fromFunctionSignature
-import io.gitlab.arturbosch.detekt.api.CodeSmell
 import io.gitlab.arturbosch.detekt.api.Config
 import io.gitlab.arturbosch.detekt.api.Configuration
 import io.gitlab.arturbosch.detekt.api.Entity
+import io.gitlab.arturbosch.detekt.api.Finding
 import io.gitlab.arturbosch.detekt.api.RequiresFullAnalysis
 import io.gitlab.arturbosch.detekt.api.Rule
 import io.gitlab.arturbosch.detekt.api.config
@@ -36,11 +36,12 @@ import org.jetbrains.kotlin.resolve.descriptorUtil.overriddenTreeUniqueAsSequenc
  * }
  * </compliant>
  */
-@RequiresFullAnalysis
-class ForbiddenNamedParam(config: Config) : Rule(
-    config,
-    "Mark the methods/constructors where using named param is forbidden."
-) {
+class ForbiddenNamedParam(config: Config) :
+    Rule(
+        config,
+        "Mark the methods/constructors where using named param is forbidden."
+    ),
+    RequiresFullAnalysis {
 
     @Configuration(
         "List of fully qualified method signatures for which are named param is forbidden. " +
@@ -82,7 +83,7 @@ class ForbiddenNamedParam(config: Config) : Rule(
                     "The method `${matchingMethod.value}` has been forbidden from using named " +
                         "param in the detekt config."
                 }
-                report(CodeSmell(Entity.from(expression), message))
+                report(Finding(Entity.from(expression), message))
             }
         }
     }

@@ -1,9 +1,36 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "labels": ["dependencies"],
-  "ignoreDeps": ["com.android.tools.build:gradle-api"],
+  "configMigration": true,
+  "labels": [
+    "dependencies"
+  ],
+  "ignoreDeps": [
+    "com.android.tools.build:gradle-api"
+  ],
   "extends": [
-    "config:base",
+    "config:recommended",
     "helpers:pinGitHubActionDigests"
+  ],
+  "packageRules": [
+    {
+      "matchDatasources": ["maven"],
+      "registryUrls": [
+        "https://repo.maven.apache.org/maven2",
+        "https://plugins.gradle.org/m2/",
+        "https://dl.google.com/android/maven2/"
+      ],
+    },
+    {
+      "groupName": "Dokka",
+      "matchPackageNames": [
+        "org.jetbrains.dokka:**"
+      ]
+    },
+    {
+      "groupName": "Poko",
+      "matchPackageNames": [
+        "dev.drewhamilton.poko:**"
+      ]
+    }
   ]
 }

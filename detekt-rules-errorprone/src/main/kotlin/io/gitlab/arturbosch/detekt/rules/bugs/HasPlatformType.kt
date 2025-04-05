@@ -1,9 +1,9 @@
 package io.gitlab.arturbosch.detekt.rules.bugs
 
 import io.gitlab.arturbosch.detekt.api.ActiveByDefault
-import io.gitlab.arturbosch.detekt.api.CodeSmell
 import io.gitlab.arturbosch.detekt.api.Config
 import io.gitlab.arturbosch.detekt.api.Entity
+import io.gitlab.arturbosch.detekt.api.Finding
 import io.gitlab.arturbosch.detekt.api.RequiresFullAnalysis
 import io.gitlab.arturbosch.detekt.api.Rule
 import org.jetbrains.kotlin.descriptors.CallableDescriptor
@@ -36,19 +36,20 @@ import org.jetbrains.kotlin.types.isFlexible
  * </compliant>
  *
  */
-@RequiresFullAnalysis
 @ActiveByDefault(since = "1.21.0")
-class HasPlatformType(config: Config) : Rule(
-    config,
-    "Platform types must be declared explicitly in public APIs."
-) {
+class HasPlatformType(config: Config) :
+    Rule(
+        config,
+        "Platform types must be declared explicitly in public APIs."
+    ),
+    RequiresFullAnalysis {
 
     override fun visitKtElement(element: KtElement) {
         super.visitKtElement(element)
 
         if (element is KtCallableDeclaration && element.hasImplicitPlatformType()) {
             report(
-                CodeSmell(
+                Finding(
                     Entity.from(element),
                     "$element has implicit platform type. Type must be declared explicitly."
                 )

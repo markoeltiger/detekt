@@ -1,8 +1,8 @@
 package io.gitlab.arturbosch.detekt.rules.exceptions
 
-import io.gitlab.arturbosch.detekt.api.CodeSmell
 import io.gitlab.arturbosch.detekt.api.Config
 import io.gitlab.arturbosch.detekt.api.Entity
+import io.gitlab.arturbosch.detekt.api.Finding
 import io.gitlab.arturbosch.detekt.api.RequiresFullAnalysis
 import io.gitlab.arturbosch.detekt.api.Rule
 import io.gitlab.arturbosch.detekt.rules.fqNameOrNull
@@ -43,12 +43,13 @@ import org.jetbrains.kotlin.types.typeUtil.supertypes
  * }
  * </compliant>
  */
-@RequiresFullAnalysis
-class ErrorUsageWithThrowable(config: Config) : Rule(
-    config,
-    "Passing `Throwable` in `error` method is ambiguous. Use " +
-        "`error(throwable.message ?: \"No error message provided\")` instead."
-) {
+class ErrorUsageWithThrowable(config: Config) :
+    Rule(
+        config,
+        "Passing `Throwable` in `error` method is ambiguous. Use " +
+            "`error(throwable.message ?: \"No error message provided\")` instead."
+    ),
+    RequiresFullAnalysis {
 
     override fun visitCallExpression(expression: KtCallExpression) {
         super.visitCallExpression(expression)
@@ -60,7 +61,7 @@ class ErrorUsageWithThrowable(config: Config) : Rule(
             errorMsgValueArg.getArgumentExpression()
         ]?.type ?: return
         if (errorMsgTypeInfo.isThrowableSubtypeOfThrowable()) {
-            report(CodeSmell(Entity.from(errorMsgValueArg), description))
+            report(Finding(Entity.from(errorMsgValueArg), description))
         }
     }
 

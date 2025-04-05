@@ -16,9 +16,9 @@ formatting:
     maxLineLength: 120
     ignoreRuleParameterThreshold: 8
   BackingPropertyNaming:
-    active: false
+    active: true
   BinaryExpressionWrapping:
-    active: false
+    active: true
     autoCorrect: true
     maxLineLength: 120
     indentSize: 4
@@ -33,7 +33,7 @@ formatting:
     active: true
     autoCorrect: true
   ChainMethodContinuation:
-    active: false
+    active: true
     autoCorrect: true
     indentSize: 4
     maxLineLength: 120
@@ -45,7 +45,7 @@ formatting:
   ClassName:
     active: false
   ClassSignature:
-    active: false
+    active: true
     autoCorrect: true
     indentSize: 4
     maxLineLength: 120
@@ -57,7 +57,7 @@ formatting:
     autoCorrect: true
     indentSize: 4
   ConditionWrapping:
-    active: false
+    active: true
     autoCorrect: true
     indentSize: 4
   ContextReceiverMapping:
@@ -69,6 +69,7 @@ formatting:
     active: true
     aliases: ['EnumEntryName']
     autoCorrect: true
+    enumEntryNameCasing: 'upper_or_camel_cases'
   EnumWrapping:
     active: true
     autoCorrect: true
@@ -83,12 +84,12 @@ formatting:
     active: true
     autoCorrect: true
   FunctionExpressionBody:
-    active: false
+    active: true
     autoCorrect: true
     indentSize: 4
     maxLineLength: 120
   FunctionLiteral:
-    active: false
+    active: true
     autoCorrect: true
     indentSize: 4
     maxLineLength: 120
@@ -109,7 +110,7 @@ formatting:
     active: true
     autoCorrect: true
   FunctionTypeModifierSpacing:
-    active: false
+    active: true
     autoCorrect: true
   FunctionTypeReferenceSpacing:
     active: true
@@ -130,6 +131,7 @@ formatting:
     active: true
     autoCorrect: true
     indentSize: 4
+    indentWhenArrowOnNewLine: false
   Kdoc:
     active: false
   KdocWrapping:
@@ -157,8 +159,9 @@ formatting:
     active: true
     autoCorrect: true
     indentSize: 4
+    functionBodyExpressionWrapping: 'multiline'
   MultilineLoop:
-    active: false
+    active: true
     autoCorrect: true
     indentSize: 4
   NoBlankLineBeforeRbrace:
@@ -236,6 +239,7 @@ formatting:
     maxLineLength: 120
   PropertyName:
     active: true
+    constantNamingStyle: 'screaming_snake_case'
   PropertyWrapping:
     active: true
     autoCorrect: true
@@ -299,11 +303,11 @@ formatting:
     autoCorrect: true
     indentSize: 4
   TrailingCommaOnCallSite:
-    active: false
+    active: true
     autoCorrect: true
     useTrailingCommaOnCallSite: true
   TrailingCommaOnDeclarationSite:
-    active: false
+    active: true
     autoCorrect: true
     useTrailingCommaOnDeclarationSite: true
   TryCatchFinallySpacing:
@@ -329,6 +333,10 @@ formatting:
     active: true
   ValueParameterComment:
     active: true
+  WhenEntryBracing:
+    active: false
+    autoCorrect: true
+    indentSize: 4
   Wrapping:
     active: true
     autoCorrect: true

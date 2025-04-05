@@ -1,8 +1,8 @@
 package io.gitlab.arturbosch.detekt.rules.bugs
 
-import io.gitlab.arturbosch.detekt.api.CodeSmell
 import io.gitlab.arturbosch.detekt.api.Config
 import io.gitlab.arturbosch.detekt.api.Entity
+import io.gitlab.arturbosch.detekt.api.Finding
 import io.gitlab.arturbosch.detekt.api.RequiresFullAnalysis
 import io.gitlab.arturbosch.detekt.api.Rule
 import io.gitlab.arturbosch.detekt.rules.getDataFlowAwareTypes
@@ -24,11 +24,12 @@ import org.jetbrains.kotlin.types.isNullable
  * println(requireNotNull(string))
  * </compliant>
  */
-@RequiresFullAnalysis
-class UnnecessaryNotNullCheck(config: Config) : Rule(
-    config,
-    "Remove unnecessary not-null checks on non-null types."
-) {
+class UnnecessaryNotNullCheck(config: Config) :
+    Rule(
+        config,
+        "Remove unnecessary not-null checks on non-null types."
+    ),
+    RequiresFullAnalysis {
 
     override fun visitCallExpression(expression: KtCallExpression) {
         super.visitCallExpression(expression)
@@ -46,7 +47,7 @@ class UnnecessaryNotNullCheck(config: Config) : Rule(
         if (dataFlowAwareTypes.all { it.isNullable() }) return
 
         report(
-            CodeSmell(
+            Finding(
                 entity = Entity.from(expression),
                 message = "Using `${callee.text}` on non-null `${argument.text}` is unnecessary",
             )

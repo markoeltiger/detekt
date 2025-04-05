@@ -2,10 +2,10 @@ package io.gitlab.arturbosch.detekt.rules.style
 
 import io.gitlab.arturbosch.detekt.api.ActiveByDefault
 import io.gitlab.arturbosch.detekt.api.Alias
-import io.gitlab.arturbosch.detekt.api.CodeSmell
 import io.gitlab.arturbosch.detekt.api.Config
 import io.gitlab.arturbosch.detekt.api.DetektVisitor
 import io.gitlab.arturbosch.detekt.api.Entity
+import io.gitlab.arturbosch.detekt.api.Finding
 import io.gitlab.arturbosch.detekt.api.Rule
 import org.jetbrains.kotlin.name.FqName
 import org.jetbrains.kotlin.psi.KtAnnotationEntry
@@ -51,7 +51,12 @@ class UnusedPrivateClass(config: Config) : Rule(
         root.accept(classVisitor)
 
         classVisitor.getUnusedClasses().forEach {
-            report(CodeSmell(Entity.from(it), "Private class ${it.nameAsSafeName.identifier} is unused."))
+            report(
+                Finding(
+                    Entity.from(it),
+                    "Private class ${it.nameAsSafeName.identifier} is unused."
+                )
+            )
         }
     }
 
@@ -163,12 +168,10 @@ class UnusedPrivateClass(config: Config) : Rule(
 
         override fun visitDoubleColonExpression(expression: KtDoubleColonExpression) {
             checkReceiverForClassUsage(expression.receiverExpression)
-            if (expression.isEmptyLHS) {
-                (expression as? KtCallableReferenceExpression)
-                    ?.callableReference
-                    ?.takeIf { looksLikeAClassName(it.getReferencedName()) }
-                    ?.let { namedClasses.add(it.getReferencedName()) }
-            }
+            (expression as? KtCallableReferenceExpression)
+                ?.callableReference
+                ?.takeIf { looksLikeAClassName(it.getReferencedName()) }
+                ?.let { namedClasses.add(it.getReferencedName()) }
             super.visitDoubleColonExpression(expression)
         }
 

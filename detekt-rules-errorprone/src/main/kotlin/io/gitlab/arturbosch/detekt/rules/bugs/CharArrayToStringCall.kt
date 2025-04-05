@@ -1,8 +1,8 @@
 package io.gitlab.arturbosch.detekt.rules.bugs
 
-import io.gitlab.arturbosch.detekt.api.CodeSmell
 import io.gitlab.arturbosch.detekt.api.Config
 import io.gitlab.arturbosch.detekt.api.Entity
+import io.gitlab.arturbosch.detekt.api.Finding
 import io.gitlab.arturbosch.detekt.api.RequiresFullAnalysis
 import io.gitlab.arturbosch.detekt.api.Rule
 import io.gitlab.arturbosch.detekt.rules.fqNameOrNull
@@ -33,11 +33,12 @@ import org.jetbrains.kotlin.resolve.calls.util.getType
  * println(s + charArray.concatToString()) // hello😅
  * </compliant>
  */
-@RequiresFullAnalysis
-class CharArrayToStringCall(config: Config) : Rule(
-    config,
-    "`CharArray.toString()` call does not return expected result."
-) {
+class CharArrayToStringCall(config: Config) :
+    Rule(
+        config,
+        "`CharArray.toString()` call does not return expected result."
+    ),
+    RequiresFullAnalysis {
 
     override fun visitQualifiedExpression(expression: KtQualifiedExpression) {
         super.visitQualifiedExpression(expression)
@@ -73,10 +74,10 @@ class CharArrayToStringCall(config: Config) : Rule(
     private fun KtBinaryExpression.isString() = getType(bindingContext)?.fqNameOrNull() == FqName("kotlin.String")
 
     private fun report(expression: KtExpression) {
-        val codeSmell = CodeSmell(
+        val finding = Finding(
             Entity.from(expression),
             "Use `concatToString()` call instead of `toString()` call."
         )
-        report(codeSmell)
+        report(finding)
     }
 }

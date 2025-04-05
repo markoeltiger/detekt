@@ -2,10 +2,10 @@ package io.gitlab.arturbosch.detekt.rules.bugs
 
 import io.gitlab.arturbosch.detekt.api.ActiveByDefault
 import io.gitlab.arturbosch.detekt.api.Alias
-import io.gitlab.arturbosch.detekt.api.CodeSmell
 import io.gitlab.arturbosch.detekt.api.Config
 import io.gitlab.arturbosch.detekt.api.Configuration
 import io.gitlab.arturbosch.detekt.api.Entity
+import io.gitlab.arturbosch.detekt.api.Finding
 import io.gitlab.arturbosch.detekt.api.RequiresFullAnalysis
 import io.gitlab.arturbosch.detekt.api.Rule
 import io.gitlab.arturbosch.detekt.api.config
@@ -41,14 +41,15 @@ import org.jetbrains.kotlin.resolve.BindingContext
  * var myMap = mapOf("answer" to 42)
  * </compliant>
  */
-@RequiresFullAnalysis
 @ActiveByDefault(since = "1.21.0")
 @Alias("DoubleMutability")
-class DoubleMutabilityForCollection(config: Config) : Rule(
-    config,
-    "Using var with mutable collections or values leads to double mutability. " +
-        "Consider using val or immutable collection or value types."
-) {
+class DoubleMutabilityForCollection(config: Config) :
+    Rule(
+        config,
+        "Using var with mutable collections or values leads to double mutability. " +
+            "Consider using val or immutable collection or value types."
+    ),
+    RequiresFullAnalysis {
 
     @Configuration("Define a list of mutable types to trigger on when defined with `var`.")
     private val mutableTypes: Set<FqName> by config(defaultMutableTypes) { types ->
@@ -62,7 +63,7 @@ class DoubleMutabilityForCollection(config: Config) : Rule(
         val standardType = type.fqNameOrNull()
         if (property.isVar && standardType in mutableTypes) {
             report(
-                CodeSmell(
+                Finding(
                     Entity.from(property),
                     "Variable ${property.name} is declared as `var` with a mutable type $standardType. " +
                         "Consider using `val` or an immutable collection or value type"

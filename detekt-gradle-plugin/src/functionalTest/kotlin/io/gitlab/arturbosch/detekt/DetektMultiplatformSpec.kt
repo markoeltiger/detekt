@@ -38,7 +38,7 @@ class DetektMultiplatformSpec {
                     srcDirs = listOf("src/commonMain/kotlin", "src/commonTest/kotlin"),
                     baselineFiles = listOf("detekt-baseline.xml", "detekt-baseline-metadataMain.xml")
                 )
-            }.apply { disableIP = true }
+            }
 
         @Test
         fun `configures baseline task`() {
@@ -103,13 +103,8 @@ class DetektMultiplatformSpec {
                     buildFileContent = joinGradleBlocks(
                         KMM_PLUGIN_BLOCK,
                         """
-                            val targetType = Attribute.of("com.example.target.type", String::class.java)
-                            
                             kotlin {
-                                jvm("jvmBackend") {
-                                    attributes.attribute(targetType, "jvmBackend")
-                                }
-                                jvm("jvmEmbedded")
+                                jvm()
                             }
                         """.trimIndent(),
                         DETEKT_BLOCK,
@@ -117,35 +112,23 @@ class DetektMultiplatformSpec {
                     srcDirs = listOf(
                         "src/commonMain/kotlin",
                         "src/commonTest/kotlin",
-                        "src/jvmBackendMain/kotlin",
-                        "src/jvmEmbeddedMain/kotlin",
+                        "src/jvmMain/kotlin",
                     ),
                     baselineFiles = listOf("detekt-baseline.xml", "detekt-baseline-main.xml")
                 )
-            }.apply { disableIP = true }
+            }
 
         @Test
         fun `configures baseline task`() {
-            gradleRunner.runTasks(":shared:detektBaselineMainJvmBackend")
-            gradleRunner.runTasks(":shared:detektBaselineTestJvmBackend")
-            gradleRunner.runTasks(":shared:detektBaselineMainJvmEmbedded")
-            gradleRunner.runTasks(":shared:detektBaselineTestJvmEmbedded")
+            gradleRunner.runTasks(":shared:detektBaselineMainJvm")
+            gradleRunner.runTasks(":shared:detektBaselineTestJvm")
         }
 
         @Test
         fun `configures detekt task with type resolution backend`() {
-            gradleRunner.runTasksAndCheckResult(":shared:detektMainJvmBackend") {
+            gradleRunner.runTasksAndCheckResult(":shared:detektMainJvm") {
                 assertThat(it.output).containsPattern("""--baseline \S*[/\\]detekt-baseline-main.xml """)
-                assertThat(it.output).containsPattern("""--report xml:\S*[/\\]mainJvmBackend.xml""")
-                assertDetektWithClasspath(it)
-            }
-        }
-
-        @Test
-        fun `configures detekt task with type resolution embedded`() {
-            gradleRunner.runTasksAndCheckResult(":shared:detektMainJvmEmbedded") {
-                assertThat(it.output).containsPattern("""--baseline \S*[/\\]detekt-baseline-main.xml """)
-                assertThat(it.output).containsPattern("""--report xml:\S*[/\\]mainJvmEmbedded.xml""")
+                assertThat(it.output).containsPattern("""--report xml:\S*[/\\]mainJvm.xml""")
                 assertDetektWithClasspath(it)
             }
         }
@@ -203,7 +186,7 @@ class DetektMultiplatformSpec {
                         "detekt-baseline-release.xml"
                     )
                 )
-            }.apply { disableIP = true }
+            }
 
         @Test
         fun `configures baseline task`() {
@@ -316,7 +299,7 @@ class DetektMultiplatformSpec {
                     ),
                     baselineFiles = listOf("detekt-baseline.xml")
                 )
-            }.apply { disableIP = true }
+            }
 
         @Test
         fun `configures baseline task`() {

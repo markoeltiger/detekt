@@ -4,7 +4,7 @@ import io.gitlab.arturbosch.detekt.api.Config
 import io.gitlab.arturbosch.detekt.rules.KotlinCoreEnvironmentTest
 import io.gitlab.arturbosch.detekt.test.TestConfig
 import io.gitlab.arturbosch.detekt.test.assertThat
-import io.gitlab.arturbosch.detekt.test.compileAndLintWithContext
+import io.gitlab.arturbosch.detekt.test.lintWithContext
 import org.jetbrains.kotlin.cli.jvm.compiler.KotlinCoreEnvironment
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -24,7 +24,7 @@ class UnnamedParameterUseSpec(private val env: KotlinCoreEnvironment) {
                 f()
             }
         """.trimIndent()
-        assertThat(subject.compileAndLintWithContext(env, code)).isEmpty()
+        assertThat(subject.lintWithContext(env, code)).isEmpty()
     }
 
     @Test
@@ -38,7 +38,7 @@ class UnnamedParameterUseSpec(private val env: KotlinCoreEnvironment) {
                 f(true)
             }
         """.trimIndent()
-        assertThat(subject.compileAndLintWithContext(env, code)).isEmpty()
+        assertThat(subject.lintWithContext(env, code)).isEmpty()
     }
 
     @Test
@@ -52,7 +52,26 @@ class UnnamedParameterUseSpec(private val env: KotlinCoreEnvironment) {
                 f(true)
             }
         """.trimIndent()
-        assertThat(getSubject(ignoreSingleParamUse = true).compileAndLintWithContext(env, code)).isEmpty()
+        assertThat(getSubject(ignoreSingleParamUse = true).lintWithContext(env, code)).isEmpty()
+    }
+
+    @Test
+    fun `does not report single unnamed param when ignoreSingleParamUse is true and ignoreArgumentsMatchingNames is false`() {
+        val code = """
+            fun f(enabled: Boolean) {
+                println(enabled)
+            }
+
+            fun test(active: Boolean) {
+                f(active)
+            }
+        """.trimIndent()
+        assertThat(
+            getSubject(
+                ignoreSingleParamUse = true,
+                ignoreArgumentsMatchingNames = false
+            ).lintWithContext(env, code)
+        ).isEmpty()
     }
 
     @Test
@@ -70,7 +89,7 @@ class UnnamedParameterUseSpec(private val env: KotlinCoreEnvironment) {
             getSubject(
                 ignoreSingleParamUse = true,
                 allowAdjacentDifferentTypeParams = false
-            ).compileAndLintWithContext(env, code)
+            ).lintWithContext(env, code)
         ).isEmpty()
     }
 
@@ -86,7 +105,107 @@ class UnnamedParameterUseSpec(private val env: KotlinCoreEnvironment) {
             }
         """.trimIndent()
         assertThat(
-            subject.compileAndLintWithContext(env, code)
+            subject.lintWithContext(env, code)
+        ).hasSize(1)
+    }
+
+    @Test
+    fun `does not report two same named params use by default`() {
+        val code = """
+            fun f(enabled: Boolean, active: Boolean) {
+                if (enabled) println(active)
+            }
+
+            fun test(enabled: Boolean, active: Boolean) {
+                f(enabled, active)
+            }
+        """.trimIndent()
+        assertThat(subject.lintWithContext(env, code)).isEmpty()
+    }
+
+    @Test
+    fun `does not report two same named params use by default when allowAdjacentDifferentTypeParams is false`() {
+        val code = """
+            fun f(enabled: Boolean, active: Boolean) {
+                if (enabled) println(active)
+            }
+
+            fun test(enabled: Boolean, active: Boolean) {
+                f(enabled, active)
+            }
+        """.trimIndent()
+        assertThat(
+            getSubject(allowAdjacentDifferentTypeParams = false)
+                .lintWithContext(env, code)
+        ).isEmpty()
+    }
+
+    @Test
+    fun `does report two same named params use in wrong order by default`() {
+        val code = """
+            fun f(enabled: Boolean, active: Boolean) {
+                if (enabled) println(active)
+            }
+
+            fun test(enabled: Boolean, active: Boolean) {
+                f(active, enabled)
+            }
+        """.trimIndent()
+        assertThat(subject.lintWithContext(env, code)).hasSize(1)
+    }
+
+    @Test
+    fun `does report two same named params use in wrong order by default when allowAdjacentDifferentTypeParams is false`() {
+        val code = """
+            fun f(enabled: Boolean, active: Boolean) {
+                if (enabled) println(active)
+            }
+
+            fun test(enabled: Boolean, active: Boolean) {
+                f(active, enabled)
+            }
+        """.trimIndent()
+        assertThat(
+            getSubject(allowAdjacentDifferentTypeParams = false)
+                .lintWithContext(env, code)
+        ).hasSize(1)
+    }
+
+    @Test
+    fun `does not report one same named param with one different named param when allowAdjacentDifferentTypeParams is true`() {
+        val code = """
+            fun f(enabled: Boolean, active: Boolean) {
+                if (enabled) println(active)
+            }
+
+            fun test(allowed: Boolean, active: Boolean) {
+                f(allowed, active)
+            }
+        """.trimIndent()
+        assertThat(
+            getSubject(allowAdjacentDifferentTypeParams = true).lintWithContext(
+                env,
+                code
+            )
+        ).isEmpty()
+    }
+
+    @Test
+    fun `does report one same named param with one different named param when allowAdjacentDifferentTypeParams is false`() {
+        val code = """
+            fun f(enabled: Boolean, active: Boolean) {
+                if (enabled) println(active)
+            }
+
+            fun test(allowed: Boolean, active: Boolean) {
+                f(allowed, active)
+            }
+        """.trimIndent()
+        assertThat(
+            getSubject(allowAdjacentDifferentTypeParams = false).lintWithContext(
+                env,
+                code
+            )
         ).hasSize(1)
     }
 
@@ -101,7 +220,7 @@ class UnnamedParameterUseSpec(private val env: KotlinCoreEnvironment) {
                 f(false, true)
             }
         """.trimIndent()
-        assertThat(subject.compileAndLintWithContext(env, code))
+        assertThat(subject.lintWithContext(env, code))
             .hasTextLocations(102 to 103)
             .singleElement()
             .hasMessage("Consider using named parameters in f as they make usage of the function more safe.")
@@ -119,23 +238,80 @@ class UnnamedParameterUseSpec(private val env: KotlinCoreEnvironment) {
             }
         """.trimIndent()
         assertThat(
-            subject.compileAndLintWithContext(env, code)
+            subject.lintWithContext(env, code)
         ).isEmpty()
     }
 
     @Test
-    fun `does not report two non adjacent unnamed param by default `() {
+    fun `does not report two non adjacent unnamed param by default`() {
         val code = """
             fun f(enabled: Boolean, tag: String, shouldLog: Boolean) {
                 if (shouldLog) println(tag + enabled.toString())
             }
 
             fun test() {
-                f(true, "", true)
+                f(true, "", false)
             }
         """.trimIndent()
         assertThat(
-            subject.compileAndLintWithContext(env, code)
+            subject.lintWithContext(env, code)
+        ).isEmpty()
+    }
+
+    @Test
+    fun `does not report two same type separated by correctly named same type with allowAdjacentDifferentTypeParams true`() {
+        val code = """
+            fun f(enabled: Boolean, isFatal: Boolean, shouldLog: Boolean) {
+                if (shouldLog) println(isFatal.toString() + enabled.toString())
+            }
+
+            fun test(isFatal: Boolean) {
+                f(true, isFatal, false)
+            }
+        """.trimIndent()
+        assertThat(
+            getSubject().lintWithContext(
+                env,
+                code
+            )
+        ).isEmpty()
+    }
+
+    @Test
+    fun `does not report two same type separated by correctly named same type with allowAdjacentDifferentTypeParams false`() {
+        val code = """
+            fun f(enabled: Boolean, isFatal: Boolean, shouldLog: Boolean) {
+                if (shouldLog) println(isFatal.toString() + enabled.toString())
+            }
+
+            fun test(isFatal: Boolean) {
+                f(true, isFatal, false)
+            }
+        """.trimIndent()
+        assertThat(
+            getSubject(allowAdjacentDifferentTypeParams = false).lintWithContext(
+                env,
+                code
+            )
+        ).hasSize(1)
+    }
+
+    @Test
+    fun `does not report two same type separated by correctly named different type with allowAdjacentDifferentTypeParams true`() {
+        val code = """
+            fun f(enabled: Boolean, level: Int, shouldLog: Boolean) {
+                if (shouldLog) println(level.toString() + enabled.toString())
+            }
+
+            fun test(level: Int) {
+                f(true, level, false)
+            }
+        """.trimIndent()
+        assertThat(
+            getSubject().lintWithContext(
+                env,
+                code
+            )
         ).isEmpty()
     }
 
@@ -151,8 +327,8 @@ class UnnamedParameterUseSpec(private val env: KotlinCoreEnvironment) {
             }
         """.trimIndent()
         assertThat(
-            getSubject(allowAdjacentDifferentTypeParams = false).compileAndLintWithContext(env, code)
-        ).hasSize(1)
+            subject.lintWithContext(env, code)
+        ).isEmpty()
     }
 
     @Test
@@ -168,7 +344,7 @@ class UnnamedParameterUseSpec(private val env: KotlinCoreEnvironment) {
             }
         """.trimIndent()
         assertThat(
-            getSubject(allowAdjacentDifferentTypeParams = true).compileAndLintWithContext(env, code)
+            getSubject(allowAdjacentDifferentTypeParams = true).lintWithContext(env, code)
         ).hasSize(1)
     }
 
@@ -184,7 +360,7 @@ class UnnamedParameterUseSpec(private val env: KotlinCoreEnvironment) {
             }
         """.trimIndent()
         assertThat(
-            getSubject(allowAdjacentDifferentTypeParams = true).compileAndLintWithContext(env, code)
+            getSubject(allowAdjacentDifferentTypeParams = true).lintWithContext(env, code)
         ).isEmpty()
     }
 
@@ -200,7 +376,7 @@ class UnnamedParameterUseSpec(private val env: KotlinCoreEnvironment) {
             }
         """.trimIndent()
         assertThat(
-            getSubject(allowAdjacentDifferentTypeParams = true).compileAndLintWithContext(env, code)
+            getSubject(allowAdjacentDifferentTypeParams = true).lintWithContext(env, code)
         ).isEmpty()
     }
 
@@ -212,7 +388,7 @@ class UnnamedParameterUseSpec(private val env: KotlinCoreEnvironment) {
             }
         """.trimIndent()
         assertThat(
-            getSubject(allowAdjacentDifferentTypeParams = true).compileAndLintWithContext(env, code)
+            getSubject(allowAdjacentDifferentTypeParams = true).lintWithContext(env, code)
         ).isEmpty()
     }
 
@@ -233,7 +409,7 @@ class UnnamedParameterUseSpec(private val env: KotlinCoreEnvironment) {
             getSubject(
                 ignoreSingleParamUse = false,
                 allowAdjacentDifferentTypeParams = false
-            ).compileAndLintWithContext(env, code)
+            ).lintWithContext(env, code)
         ).isEmpty()
     }
 
@@ -254,7 +430,7 @@ class UnnamedParameterUseSpec(private val env: KotlinCoreEnvironment) {
             getSubject(
                 ignoreSingleParamUse = false,
                 allowAdjacentDifferentTypeParams = false
-            ).compileAndLintWithContext(env, code)
+            ).lintWithContext(env, code)
         ).hasSize(1)
     }
 
@@ -273,7 +449,7 @@ class UnnamedParameterUseSpec(private val env: KotlinCoreEnvironment) {
             }
         """.trimIndent()
         assertThat(
-            subject.compileAndLintWithContext(env, code)
+            subject.lintWithContext(env, code)
         ).hasSize(1)
     }
 
@@ -292,7 +468,7 @@ class UnnamedParameterUseSpec(private val env: KotlinCoreEnvironment) {
             }
         """.trimIndent()
         assertThat(
-            getSubject(allowAdjacentDifferentTypeParams = true).compileAndLintWithContext(env, code)
+            getSubject(allowAdjacentDifferentTypeParams = true).lintWithContext(env, code)
         ).hasSize(1)
     }
 
@@ -306,7 +482,7 @@ class UnnamedParameterUseSpec(private val env: KotlinCoreEnvironment) {
             }
         """.trimIndent()
         assertThat(
-            getSubject(allowAdjacentDifferentTypeParams = true).compileAndLintWithContext(env, code)
+            getSubject(allowAdjacentDifferentTypeParams = true).lintWithContext(env, code)
         ).hasSize(1)
     }
 
@@ -324,7 +500,7 @@ class UnnamedParameterUseSpec(private val env: KotlinCoreEnvironment) {
             }
         """.trimIndent()
         assertThat(
-            getSubject(allowAdjacentDifferentTypeParams = true).compileAndLintWithContext(env, code)
+            getSubject(allowAdjacentDifferentTypeParams = true).lintWithContext(env, code)
         ).hasSize(1)
     }
 
@@ -341,7 +517,7 @@ class UnnamedParameterUseSpec(private val env: KotlinCoreEnvironment) {
                     a(9, 0)
                 }
             """.trimIndent()
-            assertThat(subject.compileAndLintWithContext(env, code)).isEmpty()
+            assertThat(subject.lintWithContext(env, code)).isEmpty()
         }
 
         @Test
@@ -355,7 +531,7 @@ class UnnamedParameterUseSpec(private val env: KotlinCoreEnvironment) {
                     a(a = 9, 0)
                 }
             """.trimIndent()
-            assertThat(subject.compileAndLintWithContext(env, code)).isEmpty()
+            assertThat(subject.lintWithContext(env, code)).isEmpty()
         }
 
         @Test
@@ -373,7 +549,7 @@ class UnnamedParameterUseSpec(private val env: KotlinCoreEnvironment) {
                 getSubject(
                     ignoreSingleParamUse = false,
                     allowAdjacentDifferentTypeParams = false
-                ).compileAndLintWithContext(env, code)
+                ).lintWithContext(env, code)
             ).hasSize(1)
         }
 
@@ -388,7 +564,7 @@ class UnnamedParameterUseSpec(private val env: KotlinCoreEnvironment) {
                     a(9, 0, 0, 0)
                 }
             """.trimIndent()
-            assertThat(subject.compileAndLintWithContext(env, code)).isEmpty()
+            assertThat(subject.lintWithContext(env, code)).isEmpty()
         }
 
         @Test
@@ -406,7 +582,7 @@ class UnnamedParameterUseSpec(private val env: KotlinCoreEnvironment) {
                 getSubject(
                     ignoreSingleParamUse = false,
                     allowAdjacentDifferentTypeParams = false
-                ).compileAndLintWithContext(env, code)
+                ).lintWithContext(env, code)
             ).hasSize(1)
         }
 
@@ -421,7 +597,7 @@ class UnnamedParameterUseSpec(private val env: KotlinCoreEnvironment) {
                     a("", "", "")
                 }
             """.trimIndent()
-            assertThat(subject.compileAndLintWithContext(env, code)).isEmpty()
+            assertThat(subject.lintWithContext(env, code)).isEmpty()
         }
 
         @Test
@@ -435,7 +611,12 @@ class UnnamedParameterUseSpec(private val env: KotlinCoreEnvironment) {
                     a("", "", "")
                 }
             """.trimIndent()
-            assertThat(getSubject(ignoreSingleParamUse = false).compileAndLintWithContext(env, code)).isEmpty()
+            assertThat(
+                getSubject(ignoreSingleParamUse = false).lintWithContext(
+                    env,
+                    code
+                )
+            ).isEmpty()
         }
 
         @Test
@@ -449,23 +630,67 @@ class UnnamedParameterUseSpec(private val env: KotlinCoreEnvironment) {
                     a(*arr)
                 }
             """.trimIndent()
-            assertThat(getSubject(ignoreSingleParamUse = false).compileAndLintWithContext(env, code)).isEmpty()
+            assertThat(
+                getSubject(ignoreSingleParamUse = false).lintWithContext(
+                    env,
+                    code
+                )
+            ).isEmpty()
+        }
+    }
+
+    @Nested
+    inner class FunctionMatcher {
+        @Test
+        fun `does not report when a function is in ignoreFunctionCall`() {
+            val code = """
+                package foo
+                
+                fun listOfChecked(a: String, b: String) = listOf(a, b)
+                
+                fun foo() {
+                    listOfChecked("hello", "world")
+                }
+            """.trimIndent()
+            val findings = getSubject(
+                ignoredFunctionCalls = listOf("foo.listOfChecked")
+            ).lintWithContext(env, code)
+            assertThat(findings).isEmpty()
+        }
+
+        @Test
+        fun `does not report when a function is in ignoreFunctionCall for specific overload`() {
+            val code = """
+                fun foo() {
+                    maxOf(1, 2, 3)
+                }
+            """.trimIndent()
+            val findings = getSubject(
+                ignoredFunctionCalls = listOf("kotlin.comparisons.maxOf(kotlin.Int, kotlin.Int, kotlin.Int)")
+            ).lintWithContext(env, code)
+            assertThat(findings).isEmpty()
         }
     }
 
     private fun getSubject(
         ignoreSingleParamUse: Boolean = true,
         allowAdjacentDifferentTypeParams: Boolean = true,
+        ignoreArgumentsMatchingNames: Boolean = true,
+        ignoredFunctionCalls: List<String> = emptyList(),
     ): UnnamedParameterUse =
         UnnamedParameterUse(
             TestConfig(
                 ALLOW_SINGLE_PARAM_USE to ignoreSingleParamUse,
                 ALLOW_NON_ADJACENT_PARAM to allowAdjacentDifferentTypeParams,
+                IGNORE_ARGUMENTS_MATCHING_NAMES to ignoreArgumentsMatchingNames,
+                IGNORE_FUNCTION_CALL to ignoredFunctionCalls,
             )
         )
 
     companion object {
         private const val ALLOW_SINGLE_PARAM_USE = "allowSingleParamUse"
         private const val ALLOW_NON_ADJACENT_PARAM = "allowAdjacentDifferentTypeParams"
+        private const val IGNORE_ARGUMENTS_MATCHING_NAMES = "ignoreArgumentsMatchingNames"
+        private const val IGNORE_FUNCTION_CALL = "ignoreFunctionCall"
     }
 }

@@ -1,8 +1,8 @@
 package io.gitlab.arturbosch.detekt.rules.bugs
 
-import io.gitlab.arturbosch.detekt.api.CodeSmell
 import io.gitlab.arturbosch.detekt.api.Config
 import io.gitlab.arturbosch.detekt.api.Entity
+import io.gitlab.arturbosch.detekt.api.Finding
 import io.gitlab.arturbosch.detekt.api.RequiresFullAnalysis
 import io.gitlab.arturbosch.detekt.api.Rule
 import io.gitlab.arturbosch.detekt.rules.isMainFunction
@@ -41,11 +41,12 @@ import org.jetbrains.kotlin.resolve.descriptorUtil.fqNameOrNull
  * </compliant>
  *
  */
-@RequiresFullAnalysis
-class ExitOutsideMain(config: Config) : Rule(
-    config,
-    "Do not directly exit the process outside the `main` function. Throw an exception instead."
-) {
+class ExitOutsideMain(config: Config) :
+    Rule(
+        config,
+        "Do not directly exit the process outside the `main` function. Throw an exception instead."
+    ),
+    RequiresFullAnalysis {
 
     override fun visitCallExpression(expression: KtCallExpression) {
         super.visitCallExpression(expression)
@@ -54,7 +55,7 @@ class ExitOutsideMain(config: Config) : Rule(
         val fqName = expression.getResolvedCall(bindingContext)?.resultingDescriptor?.fqNameOrNull() ?: return
 
         if (fqName.asString() in exitCalls) {
-            report(CodeSmell(Entity.from(expression), description))
+            report(Finding(Entity.from(expression), description))
         }
     }
 

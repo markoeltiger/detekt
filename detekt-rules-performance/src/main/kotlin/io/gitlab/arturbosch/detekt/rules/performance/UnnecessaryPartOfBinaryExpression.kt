@@ -1,20 +1,18 @@
 package io.gitlab.arturbosch.detekt.rules.performance
 
-import io.gitlab.arturbosch.detekt.api.CodeSmell
+import com.intellij.psi.tree.IElementType
 import io.gitlab.arturbosch.detekt.api.Config
 import io.gitlab.arturbosch.detekt.api.Entity
+import io.gitlab.arturbosch.detekt.api.Finding
 import io.gitlab.arturbosch.detekt.api.Rule
-import org.jetbrains.kotlin.com.intellij.psi.tree.IElementType
 import org.jetbrains.kotlin.lexer.KtTokens
 import org.jetbrains.kotlin.psi.KtBinaryExpression
 import org.jetbrains.kotlin.psi.KtExpression
 import org.jetbrains.kotlin.utils.addIfNotNull
 
 /**
- * Unnecessary binary expression add complexity to the code and accomplish nothing. They should be removed.
- * The rule works with all binary expression included if and when condition. The rule also works with all predicates.
- * The rule verify binary expression only in case when the expression use only one type of the following
- * operators || or &&.
+ * This rule applies to unnecessary binary expressions, including those in `if` and `when` conditions, as well as all predicates.
+ * Binary expressions with `||` and `&&` operator are checked.
  *
  * <noncompliant>
  * val foo = true
@@ -33,7 +31,7 @@ import org.jetbrains.kotlin.utils.addIfNotNull
  */
 class UnnecessaryPartOfBinaryExpression(config: Config) : Rule(
     config,
-    "Detects duplicate condition into binary expression and recommends to remove unnecessary checks"
+    "Detects unnecessary checks in binary expressions."
 ) {
 
     override fun visitBinaryExpression(expression: KtBinaryExpression) {
@@ -47,7 +45,7 @@ class UnnecessaryPartOfBinaryExpression(config: Config) : Rule(
 
         val expressions = expression.expressions(operator).map { it.text.replace(whiteSpace, "") }
         if (expressions.size != expressions.distinct().size) {
-            report(CodeSmell(Entity.from(expression), description))
+            report(Finding(Entity.from(expression), description))
         }
     }
 

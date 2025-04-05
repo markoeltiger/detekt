@@ -1,11 +1,12 @@
 package io.gitlab.arturbosch.detekt.rules.coroutines
 
-import io.gitlab.arturbosch.detekt.api.CodeSmell
 import io.gitlab.arturbosch.detekt.api.Config
 import io.gitlab.arturbosch.detekt.api.Entity
+import io.gitlab.arturbosch.detekt.api.Finding
 import io.gitlab.arturbosch.detekt.api.RequiresFullAnalysis
 import io.gitlab.arturbosch.detekt.api.Rule
-import io.gitlab.arturbosch.detekt.rules.fqNameOrNull
+import io.gitlab.arturbosch.detekt.rules.coroutines.utils.isCoroutineScope
+import io.gitlab.arturbosch.detekt.rules.coroutines.utils.isCoroutinesFlow
 import io.gitlab.arturbosch.detekt.rules.hasAnnotation
 import org.jetbrains.kotlin.name.FqName
 import org.jetbrains.kotlin.psi.KtDotQualifiedExpression
@@ -45,12 +46,14 @@ import org.jetbrains.kotlin.resolve.source.getPsi
  * </compliant>
  *
  */
-@RequiresFullAnalysis
-class CoroutineLaunchedInTestWithoutRunTest(config: Config) : Rule(
-    config,
-    "Launching coroutines in tests without a `runTest` block could swallow exceptions. " +
-        "You should use `runTest` to avoid altering test results."
-) {
+class CoroutineLaunchedInTestWithoutRunTest(config: Config) :
+    Rule(
+        config,
+        "Launching coroutines in tests without a `runTest` block could swallow exceptions. " +
+            "You should use `runTest` to avoid altering test results."
+    ),
+    RequiresFullAnalysis {
+
     private val funCoroutineLaunchesTraverseHelper = FunCoroutineLaunchesTraverseHelper()
 
     override fun visitNamedFunction(initialFunction: KtNamedFunction) {
@@ -59,8 +62,12 @@ class CoroutineLaunchedInTestWithoutRunTest(config: Config) : Rule(
         if (initialFunction.runsInRunTestBlock()) return
 
         // By this point we know we're inside a test function that is not a `runTest` function.
-        if (funCoroutineLaunchesTraverseHelper.isFunctionLaunchingCoroutines(initialFunction, bindingContext)) {
-            report(CodeSmell(Entity.from(initialFunction), MESSAGE))
+        if (funCoroutineLaunchesTraverseHelper.isFunctionLaunchingCoroutines(
+                initialFunction,
+                bindingContext
+            )
+        ) {
+            report(Finding(Entity.from(initialFunction), MESSAGE))
         }
     }
 
@@ -84,13 +91,13 @@ class FunCoroutineLaunchesTraverseHelper {
 
     fun isFunctionLaunchingCoroutines(
         initialFunction: KtNamedFunction,
-        bindingContext: BindingContext
+        bindingContext: BindingContext,
     ): Boolean {
         val traversedFunctions = mutableSetOf<KtNamedFunction>()
 
         fun checkFunctionAndSaveToCache(
             function: KtNamedFunction,
-            parents: List<KtNamedFunction> = emptyList()
+            parents: List<KtNamedFunction> = emptyList(),
         ) {
             val isLaunching = function.isLaunchingCoroutine(bindingContext)
             exploredFunctionsCache.putIfAbsent(function, isLaunching)
@@ -102,7 +109,7 @@ class FunCoroutineLaunchesTraverseHelper {
 
         fun getChildFunctionsOf(
             function: KtNamedFunction,
-            parents: List<KtNamedFunction> = emptyList()
+            parents: List<KtNamedFunction> = emptyList(),
         ): Set<KtNamedFunction> {
             function.collectDescendantsOfType<KtExpression>().mapNotNull {
                 it.getResolvedCall(bindingContext)
@@ -134,11 +141,11 @@ class FunCoroutineLaunchesTraverseHelper {
         anyDescendantOfType<KtDotQualifiedExpression> {
             it.receiverExpression
                 .getType(bindingContext)
-                ?.fqNameOrNull() == COROUTINE_SCOPE_FQ &&
-                it.getCalleeExpressionIfAny()?.text == "launch"
+                ?.isCoroutineScope() == true &&
+                it.getCalleeExpressionIfAny()?.text in listOf("launch", "async") ||
+                it.receiverExpression
+                    .getType(bindingContext)
+                    ?.isCoroutinesFlow() == true &&
+                it.getCalleeExpressionIfAny()?.text == "launchIn"
         }
-
-    companion object {
-        private val COROUTINE_SCOPE_FQ = FqName("kotlinx.coroutines.CoroutineScope")
-    }
 }

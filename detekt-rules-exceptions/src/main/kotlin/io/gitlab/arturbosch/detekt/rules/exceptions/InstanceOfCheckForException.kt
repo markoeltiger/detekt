@@ -1,9 +1,9 @@
 package io.gitlab.arturbosch.detekt.rules.exceptions
 
 import io.gitlab.arturbosch.detekt.api.ActiveByDefault
-import io.gitlab.arturbosch.detekt.api.CodeSmell
 import io.gitlab.arturbosch.detekt.api.Config
 import io.gitlab.arturbosch.detekt.api.Entity
+import io.gitlab.arturbosch.detekt.api.Finding
 import io.gitlab.arturbosch.detekt.api.RequiresFullAnalysis
 import io.gitlab.arturbosch.detekt.api.Rule
 import org.jetbrains.kotlin.psi.KtBinaryExpressionWithTypeRHS
@@ -42,19 +42,20 @@ import org.jetbrains.kotlin.types.typeUtil.isSubtypeOf
  * }
  * </compliant>
  */
-@RequiresFullAnalysis
 @ActiveByDefault(since = "1.21.0")
-class InstanceOfCheckForException(config: Config) : Rule(
-    config,
-    "Instead of catching for a general exception type and checking for a specific exception type, " +
-        "use multiple catch blocks."
-) {
+class InstanceOfCheckForException(config: Config) :
+    Rule(
+        config,
+        "Instead of catching for a general exception type and checking for a specific exception type, " +
+            "use multiple catch blocks."
+    ),
+    RequiresFullAnalysis {
 
     override fun visitCatchSection(catchClause: KtCatchClause) {
         val catchParameter = catchClause.catchParameter ?: return
         catchClause.catchBody?.forEachDescendantOfType<KtExpression> {
             if (it.isCheckForSubTypeOf(catchParameter)) {
-                report(CodeSmell(Entity.from(it), description))
+                report(Finding(Entity.from(it), description))
             }
         }
     }

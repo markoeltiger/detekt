@@ -1,9 +1,9 @@
 package io.gitlab.arturbosch.detekt.rules.style
 
 import io.gitlab.arturbosch.detekt.api.ActiveByDefault
-import io.gitlab.arturbosch.detekt.api.CodeSmell
 import io.gitlab.arturbosch.detekt.api.Config
 import io.gitlab.arturbosch.detekt.api.Entity
+import io.gitlab.arturbosch.detekt.api.Finding
 import io.gitlab.arturbosch.detekt.api.Rule
 import org.jetbrains.kotlin.builtins.StandardNames.IMPLICIT_LAMBDA_PARAMETER_NAME
 import org.jetbrains.kotlin.psi.KtLambdaExpression
@@ -21,7 +21,6 @@ import org.jetbrains.kotlin.psi.KtLambdaExpression
  * listOfPairs.map(::second).forEach { it ->
  *     it.execute()
  * }
- * collection.zipWithNext { it, next -> Pair(it, next) }
  * </noncompliant>
  *
  * <compliant>
@@ -33,37 +32,30 @@ import org.jetbrains.kotlin.psi.KtLambdaExpression
  * listOfPairs.map(::second).forEach { apiRequest ->
  *     apiRequest.execute()
  * }
- *
- * // Lambdas with multiple parameter should be named clearly, using it for one of them can be confusing
- * collection.zipWithNext { prev, next ->
- *     Pair(prev, next)
- * }
  * </compliant>
  */
 @ActiveByDefault(since = "1.21.0")
-class ExplicitItLambdaParameter(config: Config) : Rule(
+class ExplicitItLambdaParameter(
+    config: Config,
+) : Rule(
     config,
-    "Declaring lambda parameters as `it` is redundant."
+    "Declaring lambda parameters as `it` is redundant.",
 ) {
-
     override fun visitLambdaExpression(lambdaExpression: KtLambdaExpression) {
         super.visitLambdaExpression(lambdaExpression)
         val parameterNames = lambdaExpression.valueParameters.map { it.nameAsName }
-        if (IMPLICIT_LAMBDA_PARAMETER_NAME in parameterNames) {
+        if (IMPLICIT_LAMBDA_PARAMETER_NAME in parameterNames && parameterNames.size == 1) {
             val message =
-                if (
-                    parameterNames.size == 1 &&
-                    lambdaExpression.valueParameters[0].typeReference == null
-                ) {
+                if (lambdaExpression.valueParameters[0].typeReference == null) {
                     "This explicit usage of `it` as the lambda parameter name can be omitted."
                 } else {
                     "`it` should not be used as name for a lambda parameter."
                 }
             report(
-                CodeSmell(
+                Finding(
                     Entity.from(lambdaExpression),
-                    message
-                )
+                    message,
+                ),
             )
         }
     }

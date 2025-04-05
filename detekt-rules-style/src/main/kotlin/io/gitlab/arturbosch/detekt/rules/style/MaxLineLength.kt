@@ -1,11 +1,13 @@
 package io.gitlab.arturbosch.detekt.rules.style
 
+import com.intellij.openapi.util.TextRange
+import com.intellij.psi.PsiElement
 import io.github.detekt.psi.absolutePath
 import io.gitlab.arturbosch.detekt.api.ActiveByDefault
-import io.gitlab.arturbosch.detekt.api.CodeSmell
 import io.gitlab.arturbosch.detekt.api.Config
 import io.gitlab.arturbosch.detekt.api.Configuration
 import io.gitlab.arturbosch.detekt.api.Entity
+import io.gitlab.arturbosch.detekt.api.Finding
 import io.gitlab.arturbosch.detekt.api.Location
 import io.gitlab.arturbosch.detekt.api.Rule
 import io.gitlab.arturbosch.detekt.api.SourceLocation
@@ -15,8 +17,6 @@ import io.gitlab.arturbosch.detekt.rules.lastArgumentMatchesKotlinReferenceUrlSy
 import io.gitlab.arturbosch.detekt.rules.lastArgumentMatchesMarkdownUrlSyntax
 import io.gitlab.arturbosch.detekt.rules.lastArgumentMatchesUrl
 import org.jetbrains.kotlin.KtPsiSourceFileLinesMapping
-import org.jetbrains.kotlin.com.intellij.openapi.util.TextRange
-import org.jetbrains.kotlin.com.intellij.psi.PsiElement
 import org.jetbrains.kotlin.diagnostics.DiagnosticUtils.getLineAndColumnRangeInPsiFile
 import org.jetbrains.kotlin.psi.KtFile
 import org.jetbrains.kotlin.psi.KtStringTemplateExpression
@@ -55,42 +55,42 @@ class MaxLineLength(config: Config) : Rule(
 
         val sourceFileLinesMapping = KtPsiSourceFileLinesMapping(file)
 
-        file.text.lines().withIndex()
-            .filterNot { (index, line) -> isValidLine(file, sourceFileLinesMapping.getLineStartOffset(index), line) }
+        file.text.lineSequence().withIndex()
+            .filterNot { (index, line) ->
+                isValidLine(file, { sourceFileLinesMapping.getLineStartOffset(index) }, line)
+            }
             .forEach { (index, line) ->
                 val offset = sourceFileLinesMapping.getLineStartOffset(index)
                 val ktElement = findFirstMeaningfulKtElementInParents(file, offset, line) ?: file
                 val textRange = TextRange(offset, offset + line.length)
                 val lineAndColumnRange = getLineAndColumnRangeInPsiFile(file, textRange)
-                val location =
-                    Location(
-                        source = SourceLocation(lineAndColumnRange.start.line, lineAndColumnRange.start.column),
-                        endSource = SourceLocation(lineAndColumnRange.end.line, lineAndColumnRange.end.column),
-                        text = TextLocation(offset, offset + line.length),
-                        path = file.absolutePath(),
-                    )
-                report(CodeSmell(Entity.from(ktElement, location), description))
+                val location = Location(
+                    source = SourceLocation(lineAndColumnRange.start.line, lineAndColumnRange.start.column),
+                    endSource = SourceLocation(lineAndColumnRange.end.line, lineAndColumnRange.end.column),
+                    text = TextLocation(offset, offset + line.length),
+                    path = file.absolutePath(),
+                )
+                report(Finding(Entity.from(ktElement, location), description))
             }
     }
 
-    private fun isValidLine(file: KtFile, offset: Int, line: String): Boolean {
-        val isUrl = line.lastArgumentMatchesUrl()
-        val isMarkdownOrRefUrl =
+    private fun isValidLine(file: KtFile, offset: () -> Int, line: String) =
+        line.length <= maxLineLength ||
+            isIgnoredStatement(file, offset, line) ||
+            line.lastArgumentMatchesUrl() ||
             line.lastArgumentMatchesMarkdownUrlSyntax() ||
-                line.lastArgumentMatchesKotlinReferenceUrlSyntax()
-        return line.length <= maxLineLength || isIgnoredStatement(file, offset, line) || isUrl || isMarkdownOrRefUrl
-    }
+            line.lastArgumentMatchesKotlinReferenceUrlSyntax()
 
-    private fun isIgnoredStatement(file: KtFile, offset: Int, line: String): Boolean =
+    private fun isIgnoredStatement(file: KtFile, offset: () -> Int, line: String): Boolean =
         containsIgnoredPackageStatement(line) ||
             containsIgnoredImportStatement(line) ||
             containsIgnoredCommentStatement(line) ||
             containsIgnoredRawString(file, offset, line)
 
-    private fun containsIgnoredRawString(file: KtFile, offset: Int, line: String): Boolean {
+    private fun containsIgnoredRawString(file: KtFile, offset: () -> Int, line: String): Boolean {
         if (!excludeRawStrings) return false
 
-        return findKtElementInParents(file, offset, line)
+        return findKtElementInParents(file, offset(), line)
             .sortedBy { it.textOffset }
             .lastOrNull()
             ?.isInsideRawString() == true

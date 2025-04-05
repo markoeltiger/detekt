@@ -1,9 +1,9 @@
 package io.gitlab.arturbosch.detekt.rules.bugs
 
 import io.gitlab.arturbosch.detekt.api.ActiveByDefault
-import io.gitlab.arturbosch.detekt.api.CodeSmell
 import io.gitlab.arturbosch.detekt.api.Config
 import io.gitlab.arturbosch.detekt.api.Entity
+import io.gitlab.arturbosch.detekt.api.Finding
 import io.gitlab.arturbosch.detekt.api.RequiresFullAnalysis
 import io.gitlab.arturbosch.detekt.api.Rule
 import org.jetbrains.kotlin.descriptors.ClassDescriptor
@@ -43,12 +43,13 @@ import org.jetbrains.kotlin.resolve.descriptorUtil.isSubclassOf
  * </compliant>
  *
  */
-@RequiresFullAnalysis
 @ActiveByDefault(since = "1.21.0")
-class UnreachableCatchBlock(config: Config) : Rule(
-    config,
-    "Unreachable catch block detected."
-) {
+class UnreachableCatchBlock(config: Config) :
+    Rule(
+        config,
+        "Unreachable catch block detected."
+    ),
+    RequiresFullAnalysis {
 
     override fun visitCatchSection(catchClause: KtCatchClause) {
         super.visitCatchSection(catchClause)
@@ -58,7 +59,7 @@ class UnreachableCatchBlock(config: Config) : Rule(
         if (prevCatchClauses.isEmpty()) return
         val catchClassDescriptor = catchClause.catchClassDescriptor() ?: return
         if (prevCatchClauses.any { catchClassDescriptor.isSubclassOf(it) }) {
-            report(CodeSmell(Entity.from(catchClause), "This catch block is unreachable."))
+            report(Finding(Entity.from(catchClause), "This catch block is unreachable."))
         }
     }
 

@@ -1,9 +1,9 @@
 package io.gitlab.arturbosch.detekt.rules.bugs
 
 import io.gitlab.arturbosch.detekt.api.ActiveByDefault
-import io.gitlab.arturbosch.detekt.api.CodeSmell
 import io.gitlab.arturbosch.detekt.api.Config
 import io.gitlab.arturbosch.detekt.api.Entity
+import io.gitlab.arturbosch.detekt.api.Finding
 import io.gitlab.arturbosch.detekt.api.RequiresFullAnalysis
 import io.gitlab.arturbosch.detekt.api.Rule
 import org.jetbrains.kotlin.name.FqName
@@ -35,11 +35,12 @@ import org.jetbrains.kotlin.resolve.descriptorUtil.fqNameSafe
  * </compliant>
  */
 @ActiveByDefault(since = "1.16.0")
-@RequiresFullAnalysis
-class ImplicitDefaultLocale(config: Config) : Rule(
-    config,
-    "Implicit default locale used for string processing. Consider using explicit locale."
-) {
+class ImplicitDefaultLocale(config: Config) :
+    Rule(
+        config,
+        "Implicit default locale used for string processing. Consider using explicit locale."
+    ),
+    RequiresFullAnalysis {
 
     private val formatCalls = listOf(
         FqName("kotlin.text.format")
@@ -55,7 +56,7 @@ class ImplicitDefaultLocale(config: Config) : Rule(
             expression.containsLocaleObject(bindingContext).not()
         ) {
             report(
-                CodeSmell(
+                Finding(
                     Entity.from(expression),
                     "${expression.text} uses implicitly default locale for string formatting."
                 )

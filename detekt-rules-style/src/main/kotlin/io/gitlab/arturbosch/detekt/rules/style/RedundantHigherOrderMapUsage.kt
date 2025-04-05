@@ -1,9 +1,9 @@
 package io.gitlab.arturbosch.detekt.rules.style
 
 import io.gitlab.arturbosch.detekt.api.ActiveByDefault
-import io.gitlab.arturbosch.detekt.api.CodeSmell
 import io.gitlab.arturbosch.detekt.api.Config
 import io.gitlab.arturbosch.detekt.api.Entity
+import io.gitlab.arturbosch.detekt.api.Finding
 import io.gitlab.arturbosch.detekt.api.RequiresFullAnalysis
 import io.gitlab.arturbosch.detekt.api.Rule
 import io.gitlab.arturbosch.detekt.rules.fqNameOrNull
@@ -69,12 +69,13 @@ import org.jetbrains.kotlin.types.typeUtil.immediateSupertypes
  * </compliant>
  *
  */
-@RequiresFullAnalysis
 @ActiveByDefault(since = "1.21.0")
-class RedundantHigherOrderMapUsage(config: Config) : Rule(
-    config,
-    "Checks for redundant 'map' calls, which can be removed."
-) {
+class RedundantHigherOrderMapUsage(config: Config) :
+    Rule(
+        config,
+        "Checks for redundant 'map' calls, which can be removed."
+    ),
+    RequiresFullAnalysis {
 
     @Suppress("ReturnCount")
     override fun visitCallExpression(expression: KtCallExpression) {
@@ -101,7 +102,7 @@ class RedundantHigherOrderMapUsage(config: Config) : Rule(
             receiverIsSet -> "This 'map' call can be replaced with 'toList'."
             else -> "This 'map' call can be removed."
         }
-        report(CodeSmell(Entity.from(calleeExpression), message))
+        report(Finding(Entity.from(calleeExpression), message))
     }
 
     private fun KtCallExpression.lambda(): KtLambdaExpression? {

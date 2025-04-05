@@ -2,8 +2,7 @@ package io.gitlab.arturbosch.detekt.rules.style
 
 import io.gitlab.arturbosch.detekt.api.Config
 import io.gitlab.arturbosch.detekt.rules.KotlinCoreEnvironmentTest
-import io.gitlab.arturbosch.detekt.test.compileAndLint
-import io.gitlab.arturbosch.detekt.test.compileAndLintWithContext
+import io.gitlab.arturbosch.detekt.test.lintWithContext
 import org.assertj.core.api.Assertions.assertThat
 import org.jetbrains.kotlin.cli.jvm.compiler.KotlinCoreEnvironment
 import org.junit.jupiter.api.Test
@@ -21,22 +20,6 @@ class NullableBooleanCheckSpec(val env: KotlinCoreEnvironment) {
 
     @ParameterizedTest
     @ValueSource(booleans = [true, false])
-    fun `does not report when there is no context`(bool: Boolean) {
-        val code = """
-            import kotlin.random.Random
-            
-            fun nullableBoolean(): Boolean? = true.takeIf { Random.nextBoolean() }
-            
-            fun foo(): Boolean {
-                return nullableBoolean() ?: $bool
-            }
-        """.trimIndent()
-
-        assertThat(subject.compileAndLint(code)).isEmpty()
-    }
-
-    @ParameterizedTest
-    @ValueSource(booleans = [true, false])
     fun `reports elvis in statement`(bool: Boolean) {
         val code = """
             import kotlin.random.Random
@@ -48,7 +31,7 @@ class NullableBooleanCheckSpec(val env: KotlinCoreEnvironment) {
             }
         """.trimIndent()
 
-        val findings = subject.compileAndLintWithContext(env, code)
+        val findings = subject.lintWithContext(env, code)
         assertThat(findings).hasSize(1)
         assertThat(findings).first().extracting { it.message }.isEqualTo(
             "The nullable boolean check `nullableBoolean() ?: $bool` should use " +
@@ -69,7 +52,7 @@ class NullableBooleanCheckSpec(val env: KotlinCoreEnvironment) {
             }
         """.trimIndent()
 
-        val findings = subject.compileAndLintWithContext(env, code)
+        val findings = subject.lintWithContext(env, code)
         assertThat(findings).hasSize(1)
         assertThat(findings).first().extracting { it.message }.isEqualTo(
             "The nullable boolean check `nullableBoolean() ?: $bool` should use " +
@@ -89,7 +72,7 @@ class NullableBooleanCheckSpec(val env: KotlinCoreEnvironment) {
             }
         """.trimIndent()
 
-        assertThat(subject.compileAndLintWithContext(env, code)).isEmpty()
+        assertThat(subject.lintWithContext(env, code)).isEmpty()
     }
 
     @ParameterizedTest
@@ -105,7 +88,7 @@ class NullableBooleanCheckSpec(val env: KotlinCoreEnvironment) {
             }
         """.trimIndent()
 
-        assertThat(subject.compileAndLintWithContext(env, code)).isEmpty()
+        assertThat(subject.lintWithContext(env, code)).isEmpty()
     }
 
     @Test
@@ -120,7 +103,7 @@ class NullableBooleanCheckSpec(val env: KotlinCoreEnvironment) {
             }
         """.trimIndent()
 
-        assertThat(subject.compileAndLintWithContext(env, code)).isEmpty()
+        assertThat(subject.lintWithContext(env, code)).isEmpty()
     }
 
     @Test
@@ -133,6 +116,6 @@ class NullableBooleanCheckSpec(val env: KotlinCoreEnvironment) {
             }
         """.trimIndent()
 
-        assertThat(subject.compileAndLintWithContext(env, code)).isEmpty()
+        assertThat(subject.lintWithContext(env, code)).isEmpty()
     }
 }

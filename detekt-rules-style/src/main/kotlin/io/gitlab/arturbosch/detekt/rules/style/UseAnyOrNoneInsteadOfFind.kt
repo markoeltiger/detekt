@@ -1,9 +1,9 @@
 package io.gitlab.arturbosch.detekt.rules.style
 
 import io.gitlab.arturbosch.detekt.api.ActiveByDefault
-import io.gitlab.arturbosch.detekt.api.CodeSmell
 import io.gitlab.arturbosch.detekt.api.Config
 import io.gitlab.arturbosch.detekt.api.Entity
+import io.gitlab.arturbosch.detekt.api.Finding
 import io.gitlab.arturbosch.detekt.api.RequiresFullAnalysis
 import io.gitlab.arturbosch.detekt.api.Rule
 import io.gitlab.arturbosch.detekt.rules.isCalling
@@ -28,12 +28,13 @@ import org.jetbrains.kotlin.psi.psiUtil.getStrictParentOfType
  * listOf(1, 2, 3).none { it == 4 }
  * </compliant>
  */
-@RequiresFullAnalysis
 @ActiveByDefault(since = "1.21.0")
-class UseAnyOrNoneInsteadOfFind(config: Config) : Rule(
-    config,
-    "Use `any` or `none` instead of `find` and `null` checks."
-) {
+class UseAnyOrNoneInsteadOfFind(config: Config) :
+    Rule(
+        config,
+        "Use `any` or `none` instead of `find` and `null` checks."
+    ),
+    RequiresFullAnalysis {
 
     @Suppress("ReturnCount")
     override fun visitCallExpression(expression: KtCallExpression) {
@@ -51,7 +52,7 @@ class UseAnyOrNoneInsteadOfFind(config: Config) : Rule(
             else -> return
         }
         val message = "Use '$replacement' instead of '$functionName'"
-        report(CodeSmell(Entity.from(expression), message))
+        report(Finding(Entity.from(expression), message))
     }
 
     companion object {

@@ -1,9 +1,9 @@
 package io.gitlab.arturbosch.detekt.rules.style
 
-import io.gitlab.arturbosch.detekt.api.CodeSmell
 import io.gitlab.arturbosch.detekt.api.Config
 import io.gitlab.arturbosch.detekt.api.Configuration
 import io.gitlab.arturbosch.detekt.api.Entity
+import io.gitlab.arturbosch.detekt.api.Finding
 import io.gitlab.arturbosch.detekt.api.Rule
 import io.gitlab.arturbosch.detekt.api.config
 import org.jetbrains.kotlin.lexer.KtTokens
@@ -14,6 +14,7 @@ import org.jetbrains.kotlin.psi.KtExpression
 import org.jetbrains.kotlin.psi.KtNamedFunction
 import org.jetbrains.kotlin.psi.KtProperty
 import org.jetbrains.kotlin.psi.KtReturnExpression
+import org.jetbrains.kotlin.psi.KtWhenEntry
 import org.jetbrains.kotlin.psi.psiUtil.anyDescendantOfType
 
 /**
@@ -59,15 +60,22 @@ class ExpressionBodySyntax(config: Config) : Rule(
     private fun KtDeclarationWithBody.checkForExpressionBodySyntax() {
         val stmt = bodyExpression
             ?.singleReturnStatement()
-            ?.takeUnless { it.containsReturnStmtsInNullableArguments() }
+            ?.takeUnless {
+                it.containsReturnStmtsInNullableArguments() || it.containsReturnInWhenExpressions()
+            }
 
         if (stmt != null && (includeLineWrapping || !isLineWrapped(stmt))) {
-            report(CodeSmell(Entity.from(stmt), description))
+            report(Finding(Entity.from(stmt), description))
         }
     }
 
     private fun KtExpression.singleReturnStatement(): KtReturnExpression? =
         (this as? KtBlockExpression)?.statements?.singleOrNull() as? KtReturnExpression
+
+    private fun KtReturnExpression.containsReturnInWhenExpressions(): Boolean =
+        anyDescendantOfType<KtReturnExpression> {
+            it.parent is KtWhenEntry
+        }
 
     private fun KtReturnExpression.containsReturnStmtsInNullableArguments(): Boolean =
         anyDescendantOfType<KtReturnExpression> { (it.parent as? KtBinaryExpression)?.operationToken == KtTokens.ELVIS }

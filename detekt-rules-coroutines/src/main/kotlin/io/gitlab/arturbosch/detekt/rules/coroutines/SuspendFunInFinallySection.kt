@@ -1,11 +1,11 @@
 package io.gitlab.arturbosch.detekt.rules.coroutines
 
-import io.gitlab.arturbosch.detekt.api.CodeSmell
+import com.intellij.psi.PsiElement
 import io.gitlab.arturbosch.detekt.api.Config
 import io.gitlab.arturbosch.detekt.api.Entity
+import io.gitlab.arturbosch.detekt.api.Finding
 import io.gitlab.arturbosch.detekt.api.RequiresFullAnalysis
 import io.gitlab.arturbosch.detekt.api.Rule
-import org.jetbrains.kotlin.com.intellij.psi.PsiElement
 import org.jetbrains.kotlin.descriptors.FunctionDescriptor
 import org.jetbrains.kotlin.psi.KtCallExpression
 import org.jetbrains.kotlin.psi.KtFinallySection
@@ -40,23 +40,25 @@ import org.jetbrains.kotlin.resolve.descriptorUtil.fqNameOrNull
  * </compliant>
  *
  */
-@RequiresFullAnalysis
-class SuspendFunInFinallySection(config: Config) : Rule(
-    config,
-    "Suspend functions should not be called from a 'finally' section without using 'NonCancellable' " +
-        "context as they won't execute if parent coroutine scope is cancelled."
-) {
+class SuspendFunInFinallySection(config: Config) :
+    Rule(
+        config,
+        "Suspend functions should not be called from a 'finally' section without using 'NonCancellable' " +
+            "context as they won't execute if parent coroutine scope is cancelled."
+    ),
+    RequiresFullAnalysis {
+
     override fun visitFinallySection(finallySection: KtFinallySection) {
         finallySection.forEachDescendantOfType<KtCallExpression> { expression ->
             if (shouldReport(expression, finallySection)) {
-                report(CodeSmell(Entity.from(expression.calleeExpression as PsiElement), description))
+                report(Finding(Entity.from(expression.calleeExpression as PsiElement), description))
             }
         }
     }
 
     private fun shouldReport(
         expression: KtCallExpression,
-        topParent: KtFinallySection
+        topParent: KtFinallySection,
     ): Boolean {
         if (!expression.isSuspendCall()) {
             return false

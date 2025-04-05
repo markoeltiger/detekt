@@ -4,8 +4,7 @@ import io.gitlab.arturbosch.detekt.api.Config
 import io.gitlab.arturbosch.detekt.rules.KotlinCoreEnvironmentTest
 import io.gitlab.arturbosch.detekt.test.TestConfig
 import io.gitlab.arturbosch.detekt.test.assertThat
-import io.gitlab.arturbosch.detekt.test.compileAndLint
-import io.gitlab.arturbosch.detekt.test.compileAndLintWithContext
+import io.gitlab.arturbosch.detekt.test.lintWithContext
 import org.jetbrains.kotlin.cli.jvm.compiler.KotlinCoreEnvironment
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -19,7 +18,7 @@ class BooleanPropertyNamingSpec(val env: KotlinCoreEnvironment) {
         @Test
         fun `should warn about Kotlin Boolean`() {
             val code = """data class Test (var default: Boolean)"""
-            val findings = subject.compileAndLintWithContext(env, code)
+            val findings = subject.lintWithContext(env, code)
 
             assertThat(findings).hasSize(1)
         }
@@ -33,7 +32,7 @@ class BooleanPropertyNamingSpec(val env: KotlinCoreEnvironment) {
                 
                 data class TestImpl (override var default: Boolean) : Test
             """.trimIndent()
-            val findings = subject.compileAndLintWithContext(env, code)
+            val findings = subject.lintWithContext(env, code)
 
             assertThat(findings).hasSize(1)
         }
@@ -41,7 +40,7 @@ class BooleanPropertyNamingSpec(val env: KotlinCoreEnvironment) {
         @Test
         fun `should warn about Kotlin Boolean nullable`() {
             val code = """data class Test (var default: Boolean?)"""
-            val findings = subject.compileAndLintWithContext(env, code)
+            val findings = subject.lintWithContext(env, code)
 
             assertThat(findings).hasSize(1)
         }
@@ -55,7 +54,7 @@ class BooleanPropertyNamingSpec(val env: KotlinCoreEnvironment) {
                 
                 data class TestImpl (override var default: Boolean?) : Test
             """.trimIndent()
-            val findings = subject.compileAndLintWithContext(env, code)
+            val findings = subject.lintWithContext(env, code)
 
             assertThat(findings).hasSize(1)
         }
@@ -63,7 +62,7 @@ class BooleanPropertyNamingSpec(val env: KotlinCoreEnvironment) {
         @Test
         fun `should warn about Kotlin Boolean initialized`() {
             val code = """data class Test (var default: Boolean = false)"""
-            val findings = subject.compileAndLintWithContext(env, code)
+            val findings = subject.lintWithContext(env, code)
 
             assertThat(findings).hasSize(1)
         }
@@ -77,7 +76,7 @@ class BooleanPropertyNamingSpec(val env: KotlinCoreEnvironment) {
                 
                 data class TestImpl (override var default: Boolean = false) : Test
             """.trimIndent()
-            val findings = subject.compileAndLintWithContext(env, code)
+            val findings = subject.lintWithContext(env, code)
 
             assertThat(findings).hasSize(1)
         }
@@ -85,7 +84,7 @@ class BooleanPropertyNamingSpec(val env: KotlinCoreEnvironment) {
         @Test
         fun `should warn about Java Boolean`() {
             val code = """data class Test (var default: java.lang.Boolean)"""
-            val findings = subject.compileAndLintWithContext(env, code)
+            val findings = subject.lintWithContext(env, code)
 
             assertThat(findings).hasSize(1)
         }
@@ -99,7 +98,7 @@ class BooleanPropertyNamingSpec(val env: KotlinCoreEnvironment) {
                 
                 data class TestImpl (override var default: java.lang.Boolean) : Test
             """.trimIndent()
-            val findings = subject.compileAndLintWithContext(env, code)
+            val findings = subject.lintWithContext(env, code)
 
             assertThat(findings).hasSize(1)
         }
@@ -115,7 +114,7 @@ class BooleanPropertyNamingSpec(val env: KotlinCoreEnvironment) {
                     override val default: java.lang.Boolean = java.lang.Boolean(true)
                 }
             """.trimIndent()
-            val findings = subject.compileAndLintWithContext(env, code)
+            val findings = subject.lintWithContext(env, code)
 
             assertThat(findings).hasSize(1)
         }
@@ -123,7 +122,7 @@ class BooleanPropertyNamingSpec(val env: KotlinCoreEnvironment) {
         @Test
         fun `should not detect primitive types`() {
             val code = """data class Test (var count: Int)"""
-            val findings = subject.compileAndLintWithContext(env, code)
+            val findings = subject.lintWithContext(env, code)
 
             assertThat(findings).isEmpty()
         }
@@ -131,7 +130,7 @@ class BooleanPropertyNamingSpec(val env: KotlinCoreEnvironment) {
         @Test
         fun `should not detect names that match an allowed pattern`() {
             val code = """data class Test (var isEnabled: Boolean, var hasDefault: Boolean)"""
-            val findings = subject.compileAndLintWithContext(env, code)
+            val findings = subject.lintWithContext(env, code)
 
             assertThat(findings).isEmpty()
         }
@@ -147,7 +146,7 @@ class BooleanPropertyNamingSpec(val env: KotlinCoreEnvironment) {
                     val emailVerified: Boolean?,
                 )
             """.trimIndent()
-            val findings = subject.compileAndLintWithContext(env, code)
+            val findings = subject.lintWithContext(env, code)
 
             assertThat(findings)
                 .hasSize(1)
@@ -164,7 +163,7 @@ class BooleanPropertyNamingSpec(val env: KotlinCoreEnvironment) {
                     var default: Boolean = true
                 }
             """.trimIndent()
-            val findings = subject.compileAndLintWithContext(env, code)
+            val findings = subject.lintWithContext(env, code)
 
             assertThat(findings).hasSize(1)
         }
@@ -180,7 +179,7 @@ class BooleanPropertyNamingSpec(val env: KotlinCoreEnvironment) {
                     override var default: Boolean = true
                 }
             """.trimIndent()
-            val findings = subject.compileAndLintWithContext(env, code)
+            val findings = subject.lintWithContext(env, code)
 
             assertThat(findings).hasSize(1)
         }
@@ -192,7 +191,7 @@ class BooleanPropertyNamingSpec(val env: KotlinCoreEnvironment) {
                     const val CONSTANT_VAL_BOOLEAN = true
                 }
             """.trimIndent()
-            val findings = subject.compileAndLintWithContext(env, code)
+            val findings = subject.lintWithContext(env, code)
 
             assertThat(findings).isEmpty()
         }
@@ -204,7 +203,7 @@ class BooleanPropertyNamingSpec(val env: KotlinCoreEnvironment) {
                     var default: Boolean? = null
                 }
             """.trimIndent()
-            val findings = subject.compileAndLintWithContext(env, code)
+            val findings = subject.lintWithContext(env, code)
 
             assertThat(findings).hasSize(1)
         }
@@ -220,7 +219,7 @@ class BooleanPropertyNamingSpec(val env: KotlinCoreEnvironment) {
                     override var default: Boolean? = null
                 }
             """.trimIndent()
-            val findings = subject.compileAndLintWithContext(env, code)
+            val findings = subject.lintWithContext(env, code)
 
             assertThat(findings).hasSize(1)
         }
@@ -232,7 +231,7 @@ class BooleanPropertyNamingSpec(val env: KotlinCoreEnvironment) {
                     var default: Boolean = false
                 }
             """.trimIndent()
-            val findings = subject.compileAndLintWithContext(env, code)
+            val findings = subject.lintWithContext(env, code)
 
             assertThat(findings).hasSize(1)
         }
@@ -248,7 +247,7 @@ class BooleanPropertyNamingSpec(val env: KotlinCoreEnvironment) {
                     override var default: Boolean = false
                 }
             """.trimIndent()
-            val findings = subject.compileAndLintWithContext(env, code)
+            val findings = subject.lintWithContext(env, code)
 
             assertThat(findings).hasSize(1)
         }
@@ -260,7 +259,7 @@ class BooleanPropertyNamingSpec(val env: KotlinCoreEnvironment) {
                     var default = true
                 }
             """.trimIndent()
-            val findings = subject.compileAndLintWithContext(env, code)
+            val findings = subject.lintWithContext(env, code)
 
             assertThat(findings).hasSize(1)
         }
@@ -276,7 +275,7 @@ class BooleanPropertyNamingSpec(val env: KotlinCoreEnvironment) {
                     override var default = true
                 }
             """.trimIndent()
-            val findings = subject.compileAndLintWithContext(env, code)
+            val findings = subject.lintWithContext(env, code)
 
             assertThat(findings).hasSize(1)
         }
@@ -288,7 +287,7 @@ class BooleanPropertyNamingSpec(val env: KotlinCoreEnvironment) {
                     var default: java.lang.Boolean = java.lang.Boolean(true)
                 }
             """.trimIndent()
-            val findings = subject.compileAndLintWithContext(env, code)
+            val findings = subject.lintWithContext(env, code)
 
             assertThat(findings).hasSize(1)
         }
@@ -304,7 +303,7 @@ class BooleanPropertyNamingSpec(val env: KotlinCoreEnvironment) {
                     override var default: java.lang.Boolean = java.lang.Boolean(true)
                 }
             """.trimIndent()
-            val findings = subject.compileAndLintWithContext(env, code)
+            val findings = subject.lintWithContext(env, code)
 
             assertThat(findings).hasSize(1)
         }
@@ -316,7 +315,7 @@ class BooleanPropertyNamingSpec(val env: KotlinCoreEnvironment) {
                     var count: Int = 0
                 }
             """.trimIndent()
-            val findings = subject.compileAndLintWithContext(env, code)
+            val findings = subject.lintWithContext(env, code)
 
             assertThat(findings).isEmpty()
         }
@@ -329,7 +328,7 @@ class BooleanPropertyNamingSpec(val env: KotlinCoreEnvironment) {
                     var hasDefault: Boolean = true
                 }
             """.trimIndent()
-            val findings = subject.compileAndLintWithContext(env, code)
+            val findings = subject.lintWithContext(env, code)
 
             assertThat(findings).isEmpty()
         }
@@ -343,7 +342,7 @@ class BooleanPropertyNamingSpec(val env: KotlinCoreEnvironment) {
             """.trimIndent()
 
             val config = TestConfig(ALLOWED_PATTERN to "^(is|has|are|need)")
-            assertThat(BooleanPropertyNaming(config).compileAndLint(code))
+            assertThat(BooleanPropertyNaming(config).lintWithContext(env, code))
                 .isEmpty()
         }
 
@@ -358,7 +357,7 @@ class BooleanPropertyNamingSpec(val env: KotlinCoreEnvironment) {
                     var emailVerified: Boolean? = false
                 }
             """.trimIndent()
-            val findings = subject.compileAndLintWithContext(env, code)
+            val findings = subject.lintWithContext(env, code)
 
             assertThat(findings)
                 .hasSize(1)

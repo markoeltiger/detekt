@@ -1,9 +1,9 @@
 package io.gitlab.arturbosch.detekt.rules.style
 
 import io.gitlab.arturbosch.detekt.api.ActiveByDefault
-import io.gitlab.arturbosch.detekt.api.CodeSmell
 import io.gitlab.arturbosch.detekt.api.Config
 import io.gitlab.arturbosch.detekt.api.Entity
+import io.gitlab.arturbosch.detekt.api.Finding
 import io.gitlab.arturbosch.detekt.api.RequiresFullAnalysis
 import io.gitlab.arturbosch.detekt.api.Rule
 import org.jetbrains.kotlin.descriptors.FunctionDescriptor
@@ -40,12 +40,13 @@ import org.jetbrains.kotlin.types.typeUtil.makeNotNullable
  * </compliant>
  *
  */
-@RequiresFullAnalysis
 @ActiveByDefault(since = "1.21.0")
-class UseOrEmpty(config: Config) : Rule(
-    config,
-    "Use `orEmpty()` call instead of `?:` with empty collection factory methods",
-) {
+class UseOrEmpty(config: Config) :
+    Rule(
+        config,
+        "Use `orEmpty()` call instead of `?:` with empty collection factory methods",
+    ),
+    RequiresFullAnalysis {
 
     @Suppress("ReturnCount")
     override fun visitBinaryExpression(expression: KtBinaryExpression) {
@@ -72,7 +73,7 @@ class UseOrEmpty(config: Config) : Rule(
         if (!leftType.makeNotNullable().isSubtypeOf(rightType)) return
 
         val message = "This '${KtTokens.ELVIS.value} ${right.text}' can be replaced with 'orEmpty()' call"
-        report(CodeSmell(Entity.from(expression), message))
+        report(Finding(Entity.from(expression), message))
     }
 
     private fun KtExpression.isEmptyElement(): Boolean {

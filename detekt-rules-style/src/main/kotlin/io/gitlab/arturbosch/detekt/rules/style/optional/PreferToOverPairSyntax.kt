@@ -1,8 +1,8 @@
 package io.gitlab.arturbosch.detekt.rules.style.optional
 
-import io.gitlab.arturbosch.detekt.api.CodeSmell
 import io.gitlab.arturbosch.detekt.api.Config
 import io.gitlab.arturbosch.detekt.api.Entity
+import io.gitlab.arturbosch.detekt.api.Finding
 import io.gitlab.arturbosch.detekt.api.RequiresFullAnalysis
 import io.gitlab.arturbosch.detekt.api.Rule
 import org.jetbrains.kotlin.descriptors.ClassConstructorDescriptor
@@ -25,11 +25,12 @@ import org.jetbrains.kotlin.resolve.descriptorUtil.fqNameOrNull
  * </compliant>
  *
  */
-@RequiresFullAnalysis
-class PreferToOverPairSyntax(config: Config) : Rule(
-    config,
-    "Pair was created using the Pair constructor, using the to syntax is preferred."
-) {
+class PreferToOverPairSyntax(config: Config) :
+    Rule(
+        config,
+        "Pair was created using the Pair constructor, using the to syntax is preferred."
+    ),
+    RequiresFullAnalysis {
 
     override fun visitCallExpression(expression: KtCallExpression) {
         super.visitCallExpression(expression)
@@ -37,7 +38,7 @@ class PreferToOverPairSyntax(config: Config) : Rule(
         if (expression.isPairConstructor()) {
             val arg = expression.valueArguments.joinToString(" to ") { it.text }
             report(
-                CodeSmell(
+                Finding(
                     Entity.from(expression),
                     message = "Pair is created by using the pair constructor. " +
                         "This can replaced by `$arg`."

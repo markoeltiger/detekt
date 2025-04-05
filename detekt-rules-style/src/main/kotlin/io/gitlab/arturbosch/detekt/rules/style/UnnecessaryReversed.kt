@@ -1,8 +1,8 @@
 package io.gitlab.arturbosch.detekt.rules.style
 
-import io.gitlab.arturbosch.detekt.api.CodeSmell
 import io.gitlab.arturbosch.detekt.api.Config
 import io.gitlab.arturbosch.detekt.api.Entity
+import io.gitlab.arturbosch.detekt.api.Finding
 import io.gitlab.arturbosch.detekt.api.RequiresFullAnalysis
 import io.gitlab.arturbosch.detekt.api.Rule
 import io.gitlab.arturbosch.detekt.rules.isCalling
@@ -28,14 +28,14 @@ import org.jetbrains.kotlin.resolve.descriptorUtil.fqNameOrNull
  *  .sortedDescending()
  * </compliant>
  */
-@RequiresFullAnalysis
-class UnnecessaryReversed(
-    config: Config,
-) : Rule(
-    config,
-    "Use single sort operation instead of sorting followed by a reverse operation or vise-versa, " +
-        "eg. use `.sortedByDescending { .. }` instead of `.sortedBy { }.asReversed()`",
-) {
+class UnnecessaryReversed(config: Config) :
+    Rule(
+        config,
+        "Use single sort operation instead of sorting followed by a reverse operation or vise-versa, " +
+            "eg. use `.sortedByDescending { .. }` instead of `.sortedBy { }.asReversed()`",
+    ),
+    RequiresFullAnalysis {
+
     override fun visitCallExpression(expression: KtCallExpression) {
         super.visitCallExpression(expression)
 
@@ -66,7 +66,7 @@ class UnnecessaryReversed(
         } ?: description
 
         report(
-            CodeSmell(
+            Finding(
                 entity = Entity.from(expression),
                 message = suggestion,
                 references = listOf(Entity.from(expression), Entity.from(parentCall)),

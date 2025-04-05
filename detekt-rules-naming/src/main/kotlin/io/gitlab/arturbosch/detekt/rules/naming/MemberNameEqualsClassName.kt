@@ -1,10 +1,10 @@
 package io.gitlab.arturbosch.detekt.rules.naming
 
 import io.gitlab.arturbosch.detekt.api.ActiveByDefault
-import io.gitlab.arturbosch.detekt.api.CodeSmell
 import io.gitlab.arturbosch.detekt.api.Config
 import io.gitlab.arturbosch.detekt.api.Configuration
 import io.gitlab.arturbosch.detekt.api.Entity
+import io.gitlab.arturbosch.detekt.api.Finding
 import io.gitlab.arturbosch.detekt.api.RequiresFullAnalysis
 import io.gitlab.arturbosch.detekt.api.Rule
 import io.gitlab.arturbosch.detekt.api.config
@@ -48,12 +48,13 @@ import org.jetbrains.kotlin.resolve.BindingContext
  * }
  * </compliant>
  */
-@RequiresFullAnalysis
 @ActiveByDefault(since = "1.2.0")
-class MemberNameEqualsClassName(config: Config) : Rule(
-    config,
-    "A member should not be given the same name as its parent class or object."
-) {
+class MemberNameEqualsClassName(config: Config) :
+    Rule(
+        config,
+        "A member should not be given the same name as its parent class or object."
+    ),
+    RequiresFullAnalysis {
 
     private val classMessage = "A member is named after the class. This might result in confusion. " +
         "Either rename the member or change it to a constructor."
@@ -66,7 +67,7 @@ class MemberNameEqualsClassName(config: Config) : Rule(
     override fun visitClass(klass: KtClass) {
         if (!klass.isInterface()) {
             (getMisnamedMembers(klass, klass.name) + getMisnamedCompanionObjectMembers(klass))
-                .forEach { report(CodeSmell(Entity.from(it), classMessage)) }
+                .forEach { report(Finding(Entity.from(it), classMessage)) }
         }
         super.visitClass(klass)
     }
@@ -74,7 +75,7 @@ class MemberNameEqualsClassName(config: Config) : Rule(
     override fun visitObjectDeclaration(declaration: KtObjectDeclaration) {
         if (!declaration.isCompanion()) {
             getMisnamedMembers(declaration, declaration.name)
-                .forEach { report(CodeSmell(Entity.from(it), objectMessage)) }
+                .forEach { report(Finding(Entity.from(it), objectMessage)) }
         }
         super.visitObjectDeclaration(declaration)
     }

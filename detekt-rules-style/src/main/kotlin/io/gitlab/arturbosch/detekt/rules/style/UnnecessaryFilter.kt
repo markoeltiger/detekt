@@ -1,9 +1,9 @@
 package io.gitlab.arturbosch.detekt.rules.style
 
 import io.gitlab.arturbosch.detekt.api.ActiveByDefault
-import io.gitlab.arturbosch.detekt.api.CodeSmell
 import io.gitlab.arturbosch.detekt.api.Config
 import io.gitlab.arturbosch.detekt.api.Entity
+import io.gitlab.arturbosch.detekt.api.Finding
 import io.gitlab.arturbosch.detekt.api.RequiresFullAnalysis
 import io.gitlab.arturbosch.detekt.api.Rule
 import org.jetbrains.kotlin.descriptors.DeclarationDescriptor
@@ -46,12 +46,13 @@ import org.jetbrains.kotlin.resolve.descriptorUtil.fqNameOrNull
  * </compliant>
  *
  */
-@RequiresFullAnalysis
 @ActiveByDefault(since = "1.21.0")
-class UnnecessaryFilter(config: Config) : Rule(
-    config,
-    "`filter()` with other collection operations may be simplified."
-) {
+class UnnecessaryFilter(config: Config) :
+    Rule(
+        config,
+        "`filter()` with other collection operations may be simplified."
+    ),
+    RequiresFullAnalysis {
 
     override fun visitCallExpression(expression: KtCallExpression) {
         super.visitCallExpression(expression)
@@ -65,7 +66,7 @@ class UnnecessaryFilter(config: Config) : Rule(
 
         secondCalls.firstOrNull { nextCall.isCalling(it.fqName) }?.let {
             val message = "'${expression.text}' can be replaced by '${it.correctOperator} $lambdaArgumentText'"
-            report(CodeSmell(Entity.from(expression), message))
+            report(Finding(Entity.from(expression), message))
         }
     }
 
@@ -111,7 +112,7 @@ class UnnecessaryFilter(config: Config) : Rule(
 
     private fun getReferrers(
         property: KtProperty,
-        propertyDescriptor: DeclarationDescriptor
+        propertyDescriptor: DeclarationDescriptor,
     ): Sequence<KtNameReferenceExpression> =
         property.siblings(forward = true, withItself = false).flatMap { sibling ->
             sibling.collectDescendantsOfType<KtNameReferenceExpression> { it.descriptor() == propertyDescriptor }

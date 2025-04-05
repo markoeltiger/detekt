@@ -11,7 +11,10 @@ include("detekt-cli")
 include("detekt-compiler-plugin")
 include("detekt-core")
 include("detekt-formatting")
+include("detekt-formatting:ktlint-repackage")
 include("detekt-generator")
+includeBuild("detekt-gradle-plugin")
+include("detekt-kotlin-analysis-api")
 include("detekt-metrics")
 include("detekt-parser")
 include("detekt-psi-utils")
@@ -31,7 +34,6 @@ include("detekt-rules-naming")
 include("detekt-rules-performance")
 include("detekt-rules-ruleauthors")
 include("detekt-rules-style")
-include("detekt-sample-extensions")
 include("detekt-test")
 include("detekt-test-utils")
 include("detekt-tooling")
@@ -41,9 +43,9 @@ enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
 enableFeaturePreview("STABLE_CONFIGURATION_CACHE")
 
 plugins {
-    id("com.gradle.develocity") version "3.18.1"
-    id("com.gradle.common-custom-user-data-gradle-plugin") version "2.0.2"
-    id("org.gradle.toolchains.foojay-resolver-convention") version "0.8.0"
+    id("com.gradle.develocity") version "3.19.2"
+    id("com.gradle.common-custom-user-data-gradle-plugin") version "2.2.1"
+    id("org.gradle.toolchains.foojay-resolver-convention") version "0.9.0"
 }
 
 val isCiBuild = providers.environmentVariable("CI").isPresent

@@ -1,8 +1,8 @@
 package io.gitlab.arturbosch.detekt.rules.style
 
-import io.gitlab.arturbosch.detekt.api.CodeSmell
 import io.gitlab.arturbosch.detekt.api.Config
 import io.gitlab.arturbosch.detekt.api.Entity
+import io.gitlab.arturbosch.detekt.api.Finding
 import io.gitlab.arturbosch.detekt.api.RequiresFullAnalysis
 import io.gitlab.arturbosch.detekt.api.Rule
 import org.jetbrains.kotlin.KtNodeTypes
@@ -43,11 +43,12 @@ import org.jetbrains.kotlin.resolve.descriptorUtil.fqNameOrNull
  * </compliant>
  *
  */
-@RequiresFullAnalysis
-class UseIfEmptyOrIfBlank(config: Config) : Rule(
-    config,
-    "Use `ifEmpty` or `ifBlank` instead of `isEmpty` or `isBlank` to assign a default value."
-) {
+class UseIfEmptyOrIfBlank(config: Config) :
+    Rule(
+        config,
+        "Use `ifEmpty` or `ifBlank` instead of `isEmpty` or `isBlank` to assign a default value."
+    ),
+    RequiresFullAnalysis {
 
     @Suppress("ReturnCount", "CyclomaticComplexMethod")
     override fun visitIfExpression(expression: KtIfExpression) {
@@ -75,7 +76,7 @@ class UseIfEmptyOrIfBlank(config: Config) : Rule(
 
         val message =
             "This '$conditionCalleeExpressionText' call can be replaced with '${replacement.replacementFunctionName}'"
-        report(CodeSmell(Entity.from(conditionCalleeExpression), message))
+        report(Finding(Entity.from(conditionCalleeExpression), message))
     }
 
     @Suppress("ReturnCount")
@@ -103,7 +104,7 @@ class UseIfEmptyOrIfBlank(config: Config) : Rule(
     private data class Replacement(
         val conditionFunctionFqName: FqName,
         val replacementFunctionName: String,
-        val negativeCondition: Boolean = false
+        val negativeCondition: Boolean = false,
     )
 
     companion object {

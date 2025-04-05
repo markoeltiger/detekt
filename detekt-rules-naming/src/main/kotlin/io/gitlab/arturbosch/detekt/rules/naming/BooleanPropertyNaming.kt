@@ -1,9 +1,9 @@
 package io.gitlab.arturbosch.detekt.rules.naming
 
-import io.gitlab.arturbosch.detekt.api.CodeSmell
 import io.gitlab.arturbosch.detekt.api.Config
 import io.gitlab.arturbosch.detekt.api.Configuration
 import io.gitlab.arturbosch.detekt.api.Entity
+import io.gitlab.arturbosch.detekt.api.Finding
 import io.gitlab.arturbosch.detekt.api.RequiresFullAnalysis
 import io.gitlab.arturbosch.detekt.api.Rule
 import io.gitlab.arturbosch.detekt.api.config
@@ -26,11 +26,12 @@ import org.jetbrains.kotlin.resolve.typeBinding.createTypeBindingForReturnType
  * val hasProgressBar: Boolean = true
  * </compliant>
  */
-@RequiresFullAnalysis
-class BooleanPropertyNaming(config: Config) : Rule(
-    config,
-    "Boolean property name should follow the naming convention set in detekt's configuration."
-) {
+class BooleanPropertyNaming(config: Config) :
+    Rule(
+        config,
+        "Boolean property name should follow the naming convention set in detekt's configuration."
+    ),
+    RequiresFullAnalysis {
 
     @Configuration("naming pattern")
     private val allowedPattern: Regex by config("^(is|has|are)", String::toRegex)
@@ -57,16 +58,16 @@ class BooleanPropertyNaming(config: Config) : Rule(
         val isNonConstantBooleanType = isBooleanType && !declaration.isConstant()
 
         if (isNonConstantBooleanType && !name.contains(allowedPattern) && !declaration.isOverride()) {
-            report(reportCodeSmell(declaration, name))
+            report(reportFinding(declaration, name))
         }
     }
 
-    private fun reportCodeSmell(
+    private fun reportFinding(
         declaration: KtCallableDeclaration,
-        name: String
-    ): CodeSmell {
+        name: String,
+    ): Finding {
         val description = "Boolean property name should match a $allowedPattern pattern."
-        return CodeSmell(
+        return Finding(
             Entity.atName(declaration),
             message = "$description Actual name is $name"
         )

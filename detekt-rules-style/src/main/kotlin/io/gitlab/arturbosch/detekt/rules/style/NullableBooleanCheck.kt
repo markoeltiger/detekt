@@ -1,12 +1,12 @@
 package io.gitlab.arturbosch.detekt.rules.style
 
-import io.gitlab.arturbosch.detekt.api.CodeSmell
+import com.intellij.psi.PsiElement
 import io.gitlab.arturbosch.detekt.api.Config
 import io.gitlab.arturbosch.detekt.api.Entity
+import io.gitlab.arturbosch.detekt.api.Finding
 import io.gitlab.arturbosch.detekt.api.RequiresFullAnalysis
 import io.gitlab.arturbosch.detekt.api.Rule
 import org.jetbrains.kotlin.KtNodeTypes
-import org.jetbrains.kotlin.com.intellij.psi.PsiElement
 import org.jetbrains.kotlin.lexer.KtTokens
 import org.jetbrains.kotlin.psi.KtBinaryExpression
 import org.jetbrains.kotlin.resolve.calls.util.getType
@@ -29,11 +29,12 @@ import org.jetbrains.kotlin.types.typeUtil.isBooleanOrNullableBoolean
  * value == true
  * </compliant>
  */
-@RequiresFullAnalysis
-class NullableBooleanCheck(config: Config) : Rule(
-    config,
-    "Nullable boolean check should use `==` rather than `?:`"
-) {
+class NullableBooleanCheck(config: Config) :
+    Rule(
+        config,
+        "Nullable boolean check should use `==` rather than `?:`"
+    ),
+    RequiresFullAnalysis {
 
     override fun visitBinaryExpression(expression: KtBinaryExpression) {
         if (expression.operationToken == KtTokens.ELVIS &&
@@ -47,7 +48,7 @@ class NullableBooleanCheck(config: Config) : Rule(
                     "`== true` rather than `?: false`"
                 }
             report(
-                CodeSmell(
+                Finding(
                     entity = Entity.from(expression),
                     message = "The nullable boolean check `${expression.text}` should use $messageSuffix",
                 )

@@ -4,6 +4,7 @@ import dev.drewhamilton.poko.Poko
 import io.gitlab.arturbosch.detekt.api.internal.validateIdentifier
 import org.jetbrains.kotlin.psi.KtFile
 import org.jetbrains.kotlin.resolve.BindingContext
+import java.net.URI
 
 /**
  * A rule defines how one specific code structure should look like. If code is found
@@ -13,10 +14,13 @@ import org.jetbrains.kotlin.resolve.BindingContext
  * A rule is implemented using the visitor pattern and should be started using the visit(KtFile)
  * function. If calculations must be done before or after the visiting process, here are
  * two predefined (preVisit/postVisit) functions which can be overridden to setup/teardown additional data.
+ *
+ * @property url An url pointing to the documentation of this rule
  */
 open class Rule(
     val config: Config,
     val description: String,
+    val url: URI? = null,
 ) : DetektVisitor() {
 
     /**
@@ -26,8 +30,12 @@ open class Rule(
      */
     open val ruleName: Name get() = Name(javaClass.simpleName)
 
-    var bindingContext: BindingContext = BindingContext.EMPTY
     protected lateinit var compilerResources: CompilerResources
+    private lateinit var _bindingContext: BindingContext
+
+    @Suppress("UnusedReceiverParameter")
+    val RequiresFullAnalysis.bindingContext: BindingContext
+        get() = _bindingContext
 
     val autoCorrect: Boolean
         get() = config.valueOrDefault(Config.AUTO_CORRECT_KEY, false) &&
@@ -45,11 +53,9 @@ open class Rule(
      */
     fun visitFile(
         root: KtFile,
-        bindingContext: BindingContext = BindingContext.EMPTY,
-        compilerResources: CompilerResources
+        compilerResources: CompilerResources,
     ): List<Finding> {
         findings.clear()
-        this.bindingContext = bindingContext
         this.compilerResources = compilerResources
         preVisit(root)
         visit(root)
@@ -82,10 +88,14 @@ open class Rule(
     }
 
     /**
-     * Adds a code smell to the findings,
+     * Adds a new finding
      */
     fun report(finding: Finding) {
         findings.add(finding)
+    }
+
+    fun setBindingContext(bindingContext: BindingContext) {
+        _bindingContext = bindingContext
     }
 
     @Poko

@@ -8,7 +8,7 @@ version = "$kotlinVersion-$detektVersion"
 
 plugins {
     id("module")
-    id("com.gradleup.shadow") version "8.3.3"
+    id("com.gradleup.shadow") version "8.3.6"
     id("de.undercouch.download") version "5.6.0"
 }
 
@@ -19,7 +19,7 @@ kotlin {
 }
 
 dependencies {
-    compileOnly(libs.kotlin.compilerEmbeddable)
+    compileOnly(libs.kotlin.compiler)
 
     implementation(projects.detektApi)
     implementation(projects.detektTooling)
@@ -42,7 +42,6 @@ publishing {
 }
 
 tasks.shadowJar {
-    relocate("org.jetbrains.kotlin.com.intellij", "com.intellij")
     relocate("org.snakeyaml.engine", "dev.detekt.shaded.snakeyaml")
     mergeServiceFiles()
     dependencies {

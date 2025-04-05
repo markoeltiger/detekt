@@ -1,13 +1,13 @@
 package io.gitlab.arturbosch.detekt.rules.bugs
 
-import io.gitlab.arturbosch.detekt.api.CodeSmell
+import com.intellij.psi.PsiElement
 import io.gitlab.arturbosch.detekt.api.Config
 import io.gitlab.arturbosch.detekt.api.Entity
+import io.gitlab.arturbosch.detekt.api.Finding
 import io.gitlab.arturbosch.detekt.api.RequiresFullAnalysis
 import io.gitlab.arturbosch.detekt.api.Rule
 import io.gitlab.arturbosch.detekt.rules.isCalling
 import io.gitlab.arturbosch.detekt.rules.isNullable
-import org.jetbrains.kotlin.com.intellij.psi.PsiElement
 import org.jetbrains.kotlin.name.FqName
 import org.jetbrains.kotlin.psi.KtCallExpression
 import org.jetbrains.kotlin.psi.KtSimpleNameExpression
@@ -37,11 +37,12 @@ import org.jetbrains.kotlin.psi.psiUtil.getQualifiedExpressionForSelector
  * }
  * </compliant>
  */
-@RequiresFullAnalysis
-class NullableToStringCall(config: Config) : Rule(
-    config,
-    "`toString()` on nullable receiver may return the string \"null\""
-) {
+class NullableToStringCall(config: Config) :
+    Rule(
+        config,
+        "`toString()` on nullable receiver may return the string \"null\""
+    ),
+    RequiresFullAnalysis {
 
     override fun visitSimpleNameExpression(expression: KtSimpleNameExpression) {
         super.visitSimpleNameExpression(expression)
@@ -67,11 +68,11 @@ class NullableToStringCall(config: Config) : Rule(
     }
 
     private fun report(element: PsiElement) {
-        val codeSmell = CodeSmell(
+        val finding = Finding(
             Entity.from(element),
             "This call '${element.text}' may return the string \"null\"."
         )
-        report(codeSmell)
+        report(finding)
     }
 
     companion object {

@@ -1,9 +1,9 @@
 package io.gitlab.arturbosch.detekt.rules.performance
 
-import io.gitlab.arturbosch.detekt.api.CodeSmell
 import io.gitlab.arturbosch.detekt.api.Config
 import io.gitlab.arturbosch.detekt.api.Configuration
 import io.gitlab.arturbosch.detekt.api.Entity
+import io.gitlab.arturbosch.detekt.api.Finding
 import io.gitlab.arturbosch.detekt.api.RequiresFullAnalysis
 import io.gitlab.arturbosch.detekt.api.Rule
 import io.gitlab.arturbosch.detekt.api.config
@@ -28,11 +28,12 @@ import org.jetbrains.kotlin.resolve.descriptorUtil.fqNameOrNull
  * listOf(1, 2, 3, 4).map { it*2 }
  * </compliant>
  */
-@RequiresFullAnalysis
-class CouldBeSequence(config: Config) : Rule(
-    config,
-    "Several chained collection operations that should be a sequence."
-) {
+class CouldBeSequence(config: Config) :
+    Rule(
+        config,
+        "Several chained collection operations that should be a sequence."
+    ),
+    RequiresFullAnalysis {
 
     @Configuration("The maximum number of allowed chained collection operations.")
     private val allowedOperations: Int by config(defaultValue = 2)
@@ -60,7 +61,7 @@ class CouldBeSequence(config: Config) : Rule(
 
         if (counter > allowedOperations) {
             val message = "${expression.text} could be .asSequence().${expression.text}"
-            report(CodeSmell(Entity.from(expression), message))
+            report(Finding(Entity.from(expression), message))
         }
     }
 

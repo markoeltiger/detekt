@@ -1,9 +1,9 @@
 package io.gitlab.arturbosch.detekt.rules.bugs
 
 import io.gitlab.arturbosch.detekt.api.ActiveByDefault
-import io.gitlab.arturbosch.detekt.api.CodeSmell
 import io.gitlab.arturbosch.detekt.api.Config
 import io.gitlab.arturbosch.detekt.api.Entity
+import io.gitlab.arturbosch.detekt.api.Finding
 import io.gitlab.arturbosch.detekt.api.RequiresFullAnalysis
 import io.gitlab.arturbosch.detekt.api.Rule
 import org.jetbrains.kotlin.lexer.KtTokens
@@ -41,17 +41,18 @@ import org.jetbrains.kotlin.resolve.descriptorUtil.fqNameSafe
  * map.getOrElse("key", { "" })
  * </compliant>
  */
-@RequiresFullAnalysis
 @ActiveByDefault(since = "1.21.0")
-class MapGetWithNotNullAssertionOperator(config: Config) : Rule(
-    config,
-    "map.get() with not-null assertion operator (!!) can result in a NullPointerException. " +
-        "Consider usage of map.getValue(), map.getOrDefault() or map.getOrElse() instead."
-) {
+class MapGetWithNotNullAssertionOperator(config: Config) :
+    Rule(
+        config,
+        "map.get() with not-null assertion operator (!!) can result in a NullPointerException. " +
+            "Consider usage of map.getValue(), map.getOrDefault() or map.getOrElse() instead."
+    ),
+    RequiresFullAnalysis {
 
     override fun visitPostfixExpression(expression: KtPostfixExpression) {
         if (expression.operationToken == KtTokens.EXCLEXCL && expression.isMapGet()) {
-            report(CodeSmell(Entity.from(expression), "map.get() with not-null assertion operator (!!)"))
+            report(Finding(Entity.from(expression), "map.get() with not-null assertion operator (!!)"))
         }
         super.visitPostfixExpression(expression)
     }

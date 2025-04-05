@@ -2,10 +2,10 @@ package io.gitlab.arturbosch.detekt.rules.style
 
 import io.github.detekt.psi.FunctionMatcher
 import io.github.detekt.psi.FunctionMatcher.Companion.fromFunctionSignature
-import io.gitlab.arturbosch.detekt.api.CodeSmell
 import io.gitlab.arturbosch.detekt.api.Config
 import io.gitlab.arturbosch.detekt.api.Configuration
 import io.gitlab.arturbosch.detekt.api.Entity
+import io.gitlab.arturbosch.detekt.api.Finding
 import io.gitlab.arturbosch.detekt.api.RequiresFullAnalysis
 import io.gitlab.arturbosch.detekt.api.Rule
 import io.gitlab.arturbosch.detekt.api.config
@@ -41,12 +41,13 @@ import org.jetbrains.kotlin.resolve.descriptorUtil.overriddenTreeUniqueAsSequenc
  * </noncompliant>
  *
  */
-@RequiresFullAnalysis
-class ForbiddenMethodCall(config: Config) : Rule(
-    config,
-    "Mark forbidden methods. A forbidden method could be an invocation of an unstable / experimental " +
-        "method and hence you might want to mark it as forbidden in order to get warned about the usage."
-) {
+class ForbiddenMethodCall(config: Config) :
+    Rule(
+        config,
+        "Mark forbidden methods. A forbidden method could be an invocation of an unstable / experimental " +
+            "method and hence you might want to mark it as forbidden in order to get warned about the usage."
+    ),
+    RequiresFullAnalysis {
 
     @Configuration(
         "List of fully qualified method signatures which are forbidden. " +
@@ -137,7 +138,7 @@ class ForbiddenMethodCall(config: Config) : Rule(
                 } else {
                     "The method `${forbidden.value}` has been forbidden in the detekt config."
                 }
-                report(CodeSmell(Entity.from(expression), message))
+                report(Finding(Entity.from(expression), message))
             }
         }
     }

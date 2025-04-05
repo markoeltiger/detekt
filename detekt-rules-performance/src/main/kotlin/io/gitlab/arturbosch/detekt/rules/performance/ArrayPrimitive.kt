@@ -1,9 +1,9 @@
 package io.gitlab.arturbosch.detekt.rules.performance
 
 import io.gitlab.arturbosch.detekt.api.ActiveByDefault
-import io.gitlab.arturbosch.detekt.api.CodeSmell
 import io.gitlab.arturbosch.detekt.api.Config
 import io.gitlab.arturbosch.detekt.api.Entity
+import io.gitlab.arturbosch.detekt.api.Finding
 import io.gitlab.arturbosch.detekt.api.RequiresFullAnalysis
 import io.gitlab.arturbosch.detekt.api.Rule
 import org.jetbrains.kotlin.builtins.KotlinBuiltIns
@@ -37,12 +37,13 @@ import org.jetbrains.kotlin.resolve.descriptorUtil.fqNameOrNull
  * fun returningFunction(): DoubleArray { }
  * </compliant>
  */
-@RequiresFullAnalysis
 @ActiveByDefault(since = "1.2.0")
-class ArrayPrimitive(config: Config) : Rule(
-    config,
-    "Using `Array<Primitive>` leads to implicit boxing and a performance hit."
-) {
+class ArrayPrimitive(config: Config) :
+    Rule(
+        config,
+        "Using `Array<Primitive>` leads to implicit boxing and a performance hit."
+    ),
+    RequiresFullAnalysis {
 
     override fun visitCallExpression(expression: KtCallExpression) {
         super.visitCallExpression(expression)
@@ -50,7 +51,7 @@ class ArrayPrimitive(config: Config) : Rule(
 
         val descriptor = expression.getResolvedCall(bindingContext)?.resultingDescriptor
         if (descriptor != null && isArrayPrimitive(descriptor)) {
-            report(CodeSmell(Entity.from(expression), description))
+            report(Finding(Entity.from(expression), description))
         }
     }
 
@@ -64,7 +65,7 @@ class ArrayPrimitive(config: Config) : Rule(
 
     private fun reportArrayPrimitives(typeReference: KtTypeReference) {
         typeReference.collectDescendantsOfType<KtTypeReference> { isArrayPrimitive(it) }
-            .forEach { report(CodeSmell(Entity.from(it), description)) }
+            .forEach { report(Finding(Entity.from(it), description)) }
     }
 
     private fun isArrayPrimitive(descriptor: CallableDescriptor): Boolean {
