@@ -69,7 +69,13 @@ internal class DefaultLifecycle(
     override val bindingProvider: (files: List<KtFile>) -> BindingContext =
         {
             if (settings.spec.projectSpec.analysisMode == AnalysisMode.full) {
-                generateBindingContext(settings.environment, it, settings::debug, settings::info)
+                generateBindingContext(
+                    settings.project,
+                    settings.configuration,
+                    it,
+                    settings::debug,
+                    settings::info
+                )
             } else {
                 BindingContext.EMPTY
             }

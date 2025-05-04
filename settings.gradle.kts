@@ -43,9 +43,9 @@ enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
 enableFeaturePreview("STABLE_CONFIGURATION_CACHE")
 
 plugins {
-    id("com.gradle.develocity") version "3.19.2"
+    id("com.gradle.develocity") version "4.0.1"
     id("com.gradle.common-custom-user-data-gradle-plugin") version "2.2.1"
-    id("org.gradle.toolchains.foojay-resolver-convention") version "0.9.0"
+    id("org.gradle.toolchains.foojay-resolver-convention") version "0.10.0"
 }
 
 val isCiBuild = providers.environmentVariable("CI").isPresent
@@ -77,5 +77,7 @@ buildCache {
 dependencyResolutionManagement {
     repositories {
         mavenCentral()
+        // Remove when this is closed: https://youtrack.jetbrains.com/issue/KT-56203/AA-Publish-analysis-api-standalone-and-dependencies-to-Maven-Central
+        maven("https://maven.pkg.jetbrains.space/kotlin/p/kotlin/kotlin-ide-plugin-dependencies")
     }
 }
